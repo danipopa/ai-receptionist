@@ -1,0 +1,118 @@
+# AI Receptionist Platform
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# React build
+build/
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Docker
+.dockerignore
+
+# AI Models (large files)
+backend/models/*.bin
+backend/models/*.onnx
+ai-engine/rasa/models/
+tts_models/
+piper_models/
+
+# Uploads and temporary files
+backend/uploads/
+backend/temp/
+uploads/
+temp/
+
+# Database
+*.db
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# SSL certificates
+deployment/nginx/ssl/*.pem
+deployment/nginx/ssl/*.key
+deployment/nginx/ssl/*.crt
+
+# Secrets and configuration
+.env
+config.local.yml
+secrets.yml
+
+# Asterisk recordings
+asterisk_sounds/
+asterisk_logs/
+
+# Testing
+.coverage
+.pytest_cache/
+coverage.xml
+*.cover
+.hypothesis/

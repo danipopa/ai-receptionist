@@ -1,0 +1,22 @@
+version: "3.1"
+
+rules:
+- rule: Say goodbye anytime the user says goodbye
+  steps:
+  - intent: goodbye
+  - action: utter_goodbye
+
+- rule: Say 'please rephrase' anytime the user sends a message with low NLU confidence
+  steps:
+  - intent: nlu_fallback
+  - action: utter_ask_rephrase
+
+- rule: Emergency transfer
+  steps:
+  - intent: emergency
+  - action: utter_transfer_human
+
+- rule: Transfer to human when requested
+  steps:
+  - intent: speak_to_human
+  - action: utter_transfer_human

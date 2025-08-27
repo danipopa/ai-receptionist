@@ -1,0 +1,155 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ai_receptionist
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - ai-receptionist-network
+
+  # Redis for caching and session storage
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - ai-receptionist-network
+
+  # Ollama for local LLM inference
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_MODELS=/root/.ollama/models
+    networks:
+      - ai-receptionist-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]  # Enable if you have GPU
+
+  # Rasa for conversation management
+  rasa:
+    build:
+      context: ./ai-engine/rasa
+      dockerfile: Dockerfile
+    ports:
+      - "5005:5005"
+    volumes:
+      - ./ai-engine/rasa/models:/app/models
+      - ./ai-engine/rasa/data:/app/data
+    environment:
+      - RASA_MODEL_PATH=/app/models
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - ai-receptionist-network
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/temp:/app/temp
+      - whisper_models:/app/models
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres123@postgres:5432/ai_receptionist
+      - REDIS_URL=redis://redis:6379
+      - OLLAMA_API_URL=http://ollama:11434
+      - RASA_API_URL=http://rasa:5005
+      - WHISPER_MODEL_PATH=/app/models/ggml-base.en.bin
+      - WHISPER_EXECUTABLE=/opt/whisper.cpp/main
+      - TTS_ENGINE=coqui
+    depends_on:
+      - postgres
+      - redis
+      - ollama
+      - rasa
+    networks:
+      - ai-receptionist-network
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - ai-receptionist-network
+
+  # Asterisk for telephony
+  asterisk:
+    build:
+      context: ./telephony/asterisk
+      dockerfile: Dockerfile
+    ports:
+      - "5060:5060/udp"  # SIP
+      - "8088:8088"      # ARI
+      - "10000-10100:10000-10100/udp"  # RTP
+    volumes:
+      - ./telephony/asterisk/extensions.conf:/etc/asterisk/extensions.conf
+      - ./telephony/asterisk/sip.conf:/etc/asterisk/sip.conf
+      - ./telephony/asterisk/http.conf:/etc/asterisk/http.conf
+      - asterisk_sounds:/var/lib/asterisk/sounds
+      - asterisk_logs:/var/log/asterisk
+    environment:
+      - ASTERISK_ARI_URL=http://backend:8000
+    depends_on:
+      - backend
+    networks:
+      - ai-receptionist-network
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deployment/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./deployment/nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - ai-receptionist-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  ollama_data:
+  whisper_models:
+  asterisk_sounds:
+  asterisk_logs:
+
+networks:
+  ai-receptionist-network:
+    driver: bridge

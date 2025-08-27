@@ -1,0 +1,173 @@
+version: "3.1"
+
+nlu:
+- intent: greet
+  examples: |
+    - hey
+    - hello
+    - hi
+    - hello there
+    - good morning
+    - good evening
+    - moin
+    - hey there
+    - let's go
+    - hey dude
+    - goodmorning
+    - goodevening
+    - good afternoon
+
+- intent: goodbye
+  examples: |
+    - cu
+    - good by
+    - cee you later
+    - good night
+    - bye
+    - goodbye
+    - have a nice day
+    - see you around
+    - bye bye
+    - see you later
+    - thank you goodbye
+
+- intent: affirm
+  examples: |
+    - yes
+    - y
+    - indeed
+    - of course
+    - that sounds good
+    - correct
+    - yeah
+    - right
+    - absolutely
+    - sure
+    - definitely
+    - ok
+    - okay
+
+- intent: deny
+  examples: |
+    - no
+    - n
+    - never
+    - I don't think so
+    - don't like that
+    - no way
+    - not really
+    - nope
+    - not interested
+    - I disagree
+
+- intent: book_appointment
+  examples: |
+    - I'd like to book an appointment
+    - I want to schedule a meeting
+    - Can I make an appointment?
+    - I need to see someone
+    - Book me an appointment
+    - Schedule an appointment
+    - I want to make a reservation
+    - Can you book me in?
+    - I'd like to schedule something
+    - Set up an appointment for me
+
+- intent: ask_business_hours
+  examples: |
+    - What are your hours?
+    - When are you open?
+    - What time do you close?
+    - Are you open now?
+    - What are your business hours?
+    - When do you open?
+    - What time are you open until?
+    - Are you open on weekends?
+
+- intent: ask_services
+  examples: |
+    - What services do you offer?
+    - What do you do?
+    - Tell me about your services
+    - What can you help me with?
+    - What are your services?
+    - What do you provide?
+    - What kind of business is this?
+
+- intent: leave_message
+  examples: |
+    - I'd like to leave a message
+    - Can you take a message?
+    - I want to leave a message for someone
+    - Please take a message
+    - Can I leave a voicemail?
+    - I need to leave a message
+
+- intent: speak_to_human
+  examples: |
+    - I want to speak to a person
+    - Can I talk to someone?
+    - Transfer me to a human
+    - I need to speak to a representative
+    - Connect me to someone
+    - I want to talk to a real person
+    - Can you put me through to someone?
+
+- intent: ask_location
+  examples: |
+    - Where are you located?
+    - What's your address?
+    - How do I get there?
+    - Where is your office?
+    - What's your location?
+    - Can you give me directions?
+
+- intent: emergency
+  examples: |
+    - This is an emergency
+    - I need help now
+    - Emergency
+    - Urgent
+    - This is urgent
+    - I need immediate assistance
+
+responses:
+  utter_greet:
+  - text: "Hello! Thank you for calling. How can I help you today?"
+  - text: "Hi there! How may I assist you?"
+  - text: "Good day! What can I do for you?"
+
+  utter_goodbye:
+  - text: "Thank you for calling! Have a great day!"
+  - text: "Goodbye! Take care!"
+  - text: "Thanks for calling. Have a wonderful day!"
+
+  utter_book_appointment:
+  - text: "I'd be happy to help you book an appointment. Let me gather some information from you."
+  - text: "Great! I can help you schedule an appointment. What would work best for you?"
+
+  utter_business_hours:
+  - text: "Our business hours are Monday through Friday, 9 AM to 5 PM. We're closed on weekends."
+  - text: "We're open Monday to Friday from 9 AM to 5 PM."
+
+  utter_services:
+  - text: "We offer a variety of services. Let me connect you with someone who can give you detailed information."
+
+  utter_take_message:
+  - text: "I'd be happy to take a message for you. Please tell me who this is for and your message."
+
+  utter_transfer_human:
+  - text: "I'll connect you with one of our team members right away. Please hold for a moment."
+  - text: "Let me transfer you to someone who can assist you better. One moment please."
+
+  utter_ask_rephrase:
+  - text: "I'm sorry, I didn't quite understand that. Could you please rephrase?"
+  - text: "Could you say that in a different way? I want to make sure I help you properly."
+
+  utter_default:
+  - text: "I understand. Let me connect you with someone who can help you with that."
+  - text: "I see. Let me get you to the right person to assist you."
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true

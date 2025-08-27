@@ -1,0 +1,45 @@
+version: "3.1"
+
+stories:
+- story: greet and book appointment
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: book_appointment
+  - action: utter_book_appointment
+
+- story: greet and ask hours
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: ask_business_hours
+  - action: utter_business_hours
+
+- story: greet and ask services
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: ask_services
+  - action: utter_services
+
+- story: leave message
+  steps:
+  - intent: leave_message
+  - action: utter_take_message
+
+- story: speak to human
+  steps:
+  - intent: speak_to_human
+  - action: utter_transfer_human
+
+- story: simple greeting
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: goodbye
+  - action: utter_goodbye
+
+- story: emergency handling
+  steps:
+  - intent: emergency
+  - action: utter_transfer_human
