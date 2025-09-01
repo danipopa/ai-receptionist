@@ -125,8 +125,8 @@ function Header() {
   };
 
   return (
-    <div className="md:pl-64 flex flex-col flex-1">
-      <div className="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-gray-100">
+    <header className="bg-white shadow-sm border-b border-gray-200">
+      <div className="md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3">
         <button
           type="button"
           className="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
@@ -134,24 +134,22 @@ function Header() {
           <span className="sr-only">Open sidebar</span>
         </button>
       </div>
-      <main className="flex-1">
-        <div className="py-6">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-semibold text-gray-900">AI Receptionist Platform</h1>
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center">
-                  <div className={`h-3 w-3 rounded-full ${getHealthColor()}`}></div>
-                  <span className="ml-2 text-sm text-gray-600 capitalize">
-                    System {getHealthStatus()}
-                  </span>
-                </div>
+      <div className="py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-semibold text-gray-900">AI Receptionist Platform</h1>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center">
+                <div className={`h-3 w-3 rounded-full ${getHealthColor()}`}></div>
+                <span className="ml-2 text-sm text-gray-600 capitalize">
+                  System {getHealthStatus()}
+                </span>
               </div>
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </header>
   );
 }
 
@@ -175,9 +173,9 @@ function App() {
     <Router>
       <div className="h-screen flex overflow-hidden bg-gray-100">
         <Sidebar />
-        <div className="flex flex-col w-0 flex-1 overflow-hidden">
+        <div className="flex flex-col flex-1 md:pl-64">
           <Header />
-          <main className="flex-1 relative overflow-y-auto focus:outline-none">
+          <main className="flex-1 overflow-y-auto focus:outline-none">
             <div className="py-6">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
                 <Routes>

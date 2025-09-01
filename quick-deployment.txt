@@ -1,0 +1,14 @@
+AI Receptionist Quick Deployment
+===============================
+
+Date: Wed Aug 27 19:49:33 PDT 2025
+Location: centralus
+Resource Group: ai-receptionist-quick
+Web App Name: ai-receptionist-ai-receptionist-49247
+Web App URL: https://ai-receptionist-ai-receptionist-49247.azurewebsites.net
+
+To monitor deployment:
+az webapp log tail --name ai-receptionist-ai-receptionist-49247 --resource-group ai-receptionist-quick
+
+To delete:
+az group delete --name ai-receptionist-quick --yes
