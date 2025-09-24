@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: freeswitch
-        image: ai-receptionist/freeswitch:latest
+        image: 176.9.65.80/ai-receptionist/freeswitch:latest
         imagePullPolicy: IfNotPresent
         ports:
         - name: sip-udp

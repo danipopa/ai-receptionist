@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: backend-api
-        image: ai-receptionist/backend:latest
+        image: 176.9.65.80/ai-receptionist/backend:latest
         imagePullPolicy: IfNotPresent
         ports:
         - name: http
