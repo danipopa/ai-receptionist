@@ -25,11 +25,45 @@ spec:
         - bash
         - -c
         - |
-          # Ensure proper ownership of the data directory
-          chown -R mysql:mysql /var/lib/mysql
-          # Remove any socket files that might cause issues
-          rm -f /var/lib/mysql/mysql.sock /var/lib/mysql/mysql.sock.lock
+          set -e
+          echo "Starting MySQL initialization..."
+          
+          # Check if MySQL data directory exists and is empty
+          if [ ! -d "/var/lib/mysql/mysql" ]; then
+            echo "MySQL system tables not found. Initializing database..."
+            
+            # Ensure proper ownership of the data directory
+            chown -R mysql:mysql /var/lib/mysql
+            
+            # Remove any socket files that might cause issues
+            rm -f /var/lib/mysql/mysql.sock /var/lib/mysql/mysql.sock.lock
+            
+            # Initialize the MySQL database with system tables
+            mysqld --initialize-insecure --user=mysql --datadir=/var/lib/mysql
+            
+            echo "MySQL database initialized successfully"
+          else
+            echo "MySQL system tables already exist. Skipping initialization."
+            # Still ensure proper ownership
+            chown -R mysql:mysql /var/lib/mysql
+          fi
+          
           echo "MySQL init container completed"
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secrets
+              key: root-password
+        - name: MYSQL_DATABASE
+          value: "ai_receptionist_production"
+        - name: MYSQL_USER
+          value: "ai_receptionist"
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secrets
+              key: user-password
         volumeMounts:
         - name: mysql-data
           mountPath: /var/lib/mysql
