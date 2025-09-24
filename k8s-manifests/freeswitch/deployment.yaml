@@ -120,7 +120,7 @@ spec:
   resources:
     requests:
       storage: 10Gi
-  storageClassName: standard
+  storageClassName: local-storage
 ---
 apiVersion: v1
 kind: ServiceAccount

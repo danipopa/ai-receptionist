@@ -51,6 +51,31 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
+  name: ai-receptionist-freeswitch-data-pv
+  labels:
+    type: local
+    app: freeswitch
+spec:
+  storageClassName: local-storage
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/home/storage/ns/ai-receptionist/freeswitch-data"
+    type: DirectoryOrCreate
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - k8svm
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
   name: ai-receptionist-freeswitch-logs-pv
   labels:
     type: local
