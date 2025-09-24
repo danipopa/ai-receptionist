@@ -1,0 +1,161 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-api
+  namespace: ai-receptionist
+  labels:
+    app: backend-api
+    component: api-server
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: backend-api
+  template:
+    metadata:
+      labels:
+        app: backend-api
+        component: api-server
+    spec:
+      containers:
+      - name: backend-api
+        image: ai-receptionist/backend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+        env:
+        - name: RAILS_ENV
+          value: "production"
+        - name: DB_HOST
+          value: "mysql"
+        - name: DB_USER
+          value: "root"
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: mysql-password
+        - name: DB_NAME
+          value: "ai_receptionist_production"
+        - name: REDIS_URL
+          value: "redis://redis:6379/0"
+        - name: SECRET_KEY_BASE
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: secret-key-base
+        - name: AI_ENGINE_URL
+          value: "http://ai-engine:8000"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 12
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      initContainers:
+      - name: db-migrate
+        image: ai-receptionist/backend:latest
+        command: ['bundle', 'exec', 'rails', 'db:migrate']
+        env:
+        - name: RAILS_ENV
+          value: "production"
+        - name: DB_HOST
+          value: "mysql"
+        - name: DB_USER
+          value: "root"
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: mysql-password
+        - name: DB_NAME
+          value: "ai_receptionist_production"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-api
+  namespace: ai-receptionist
+  labels:
+    app: backend-api
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 3000
+    targetPort: 3000
+    protocol: TCP
+  selector:
+    app: backend-api
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-secrets
+  namespace: ai-receptionist
+type: Opaque
+data:
+  # Base64 encoded secrets
+  # Generate with: echo -n "your-secret" | base64
+  mysql-password: bXlzcWwtcGFzc3dvcmQ=
+  secret-key-base: eW91ci1zZWNyZXQta2V5LWJhc2UtaGVyZQ==
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-api-hpa
+  namespace: ai-receptionist
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend-api
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80

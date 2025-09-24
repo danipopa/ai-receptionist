@@ -1,0 +1,108 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ai-receptionist-ingress
+  namespace: ai-receptionist
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-rps: "10"
+spec:
+  tls:
+  - hosts:
+    - api.ai-receptionist.your-domain.com
+    - freeswitch.ai-receptionist.your-domain.com
+    secretName: ai-receptionist-tls
+  rules:
+  - host: api.ai-receptionist.your-domain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-api
+            port:
+              number: 3000
+  - host: freeswitch.ai-receptionist.your-domain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: freeswitch-api
+            port:
+              number: 8080
+---
+# Network Policy for security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ai-receptionist-network-policy
+  namespace: ai-receptionist
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow ingress from ingress controller
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+  # Allow inter-service communication within namespace
+  - from:
+    - podSelector: {}
+  # Allow external SIP traffic to FreeSWITCH
+  - ports:
+    - protocol: UDP
+      port: 5060
+  # Allow external RTP traffic to FreeSWITCH
+  - ports:
+    - protocol: UDP
+      port: 16384
+    - protocol: UDP
+      port: 32768
+  egress:
+  # Allow all egress (can be restricted further in production)
+  - {}
+---
+# Pod Disruption Budget for high availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: freeswitch-pdb
+  namespace: ai-receptionist
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: freeswitch
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ai-engine-pdb
+  namespace: ai-receptionist
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: ai-engine
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: backend-api-pdb
+  namespace: ai-receptionist
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: backend-api

@@ -1,0 +1,38 @@
+<include>
+  <context name="ai_receptionist">
+    
+    <!-- Incoming calls to AI receptionist -->
+    <extension name="ai_receptionist_incoming">
+      <condition field="destination_number" expression="^(ai_receptionist|1000)$">
+        <action application="set" data="call_timeout=30"/>
+        <action application="set" data="hangup_after_bridge=true"/>
+        <action application="answer"/>
+        <action application="sleep" data="1000"/>
+        
+        <!-- Start WebSocket connection to AI system -->
+        <action application="socket" data="localhost:8080 async full"/>
+        
+        <!-- Fallback if AI system is unavailable -->
+        <action application="playback" data="ivr/ivr-thank_you_for_calling.wav"/>
+        <action application="playback" data="ivr/ivr-please_hold_while_we_transfer_your_call.wav"/>
+        <action application="transfer" data="operator"/>
+      </condition>
+    </extension>
+    
+    <!-- Transfer to human operator -->
+    <extension name="operator_transfer">
+      <condition field="destination_number" expression="^operator$">
+        <action application="bridge" data="user/operator@$${domain_name}"/>
+        <action application="hangup"/>
+      </condition>
+    </extension>
+    
+    <!-- Voicemail fallback -->
+    <extension name="voicemail">
+      <condition field="destination_number" expression="^voicemail$">
+        <action application="voicemail" data="default $${domain_name} 1000"/>
+      </condition>
+    </extension>
+    
+  </context>
+</include>

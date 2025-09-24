@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: freeswitch
+  namespace: ai-receptionist
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: freeswitch
+  template:
+    metadata:
+      labels:
+        app: freeswitch
+    spec:
+      containers:
+      - name: freeswitch
+        image: 176.9.65.80/freeswitch:latest
+        ports:
+        - containerPort: 5060
+        - containerPort: 8080
+        volumeMounts:
+        - name: freeswitch-config
+          mountPath: /usr/local/freeswitch/conf
+        readinessProbe:
+          exec:
+            command:
+            - /usr/local/bin/healthcheck.sh
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      volumes:
+      - name: freeswitch-config
+        configMap:
+          name: freeswitch-configmap

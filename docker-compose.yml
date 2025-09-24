@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-}
+      MYSQL_ALLOW_EMPTY_PASSWORD: yes
+      MYSQL_DATABASE: ${DB_NAME_DEV:-backend_ai_receptionist_development}
+      MYSQL_USER: ${DB_USER:-root}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Redis for AI Engine session storage
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 5s
+      retries: 5
+
+  # Rails Backend API
+  backend:
+    build: 
+      context: ./backend-ai-receptionist
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=mysql2://ai_receptionist:password@mysql:3306/ai_receptionist_development
+      - RAILS_ENV=development
+      - AI_ENGINE_URL=http://ai-engine:8081
+      - FREESWITCH_URL=http://ai-freeswitch:8080
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend-ai-receptionist:/app
+    command: ["rails", "server", "-b", "0.0.0.0"]
+
+  # AI Engine Service
+  ai-engine:
+    build:
+      context: ./ai-engine
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MODEL_NAME=gpt-3.5-turbo
+      - REDIS_URL=redis://redis:6379
+      - HOST=0.0.0.0
+      - PORT=8081
+      - DEBUG=true
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./ai-engine:/app
+
+  # FreeSWITCH Integration Service
+  ai-freeswitch:
+    build:
+      context: ./ai-freeswitch
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+      - "5060:5060/udp"  # SIP port
+      - "16384-32768:16384-32768/udp"  # RTP ports
+    environment:
+      - AI_ENGINE_URL=http://ai-engine:8081
+      - BACKEND_URL=http://backend:3000
+      - HOST=0.0.0.0
+      - PORT=8080
+    volumes:
+      - ./ai-freeswitch:/app
+    depends_on:
+      - backend
+      - ai-engine
+
+  # Nuxt Frontend
+  frontend:
+    build:
+      context: ./frontend-ai-receptionist
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
+    environment:
+      - NUXT_PUBLIC_API_BASE=http://localhost:3000/api
+      - NUXT_PUBLIC_WS_URL=ws://localhost:8080
+    volumes:
+      - ./frontend-ai-receptionist:/app
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
+  redis_data:

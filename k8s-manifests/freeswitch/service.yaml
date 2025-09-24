@@ -1,0 +1,113 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: freeswitch-sip
+  namespace: ai-receptionist
+  labels:
+    app: freeswitch
+    service-type: sip
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "udp"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600
+  ports:
+  - name: sip-udp
+    port: 5060
+    targetPort: 5060
+    protocol: UDP
+  selector:
+    app: freeswitch
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: freeswitch-rtp
+  namespace: ai-receptionist
+  labels:
+    app: freeswitch
+    service-type: rtp
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "udp"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600
+  ports:
+  # RTP port range - in production, you might want to limit this range
+  - name: rtp-16384
+    port: 16384
+    targetPort: 16384
+    protocol: UDP
+  - name: rtp-16385
+    port: 16385
+    targetPort: 16385
+    protocol: UDP
+  - name: rtp-16386
+    port: 16386
+    targetPort: 16386
+    protocol: UDP
+  - name: rtp-16387
+    port: 16387
+    targetPort: 16387
+    protocol: UDP
+  - name: rtp-16388
+    port: 16388
+    targetPort: 16388
+    protocol: UDP
+  # Add more RTP ports as needed for concurrent calls
+  # For production, consider using a range or separate service per pod
+  selector:
+    app: freeswitch
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: freeswitch-api
+  namespace: ai-receptionist
+  labels:
+    app: freeswitch
+    service-type: api
+spec:
+  type: ClusterIP
+  ports:
+  - name: http-api
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: freeswitch
+---
+# Headless service for internal pod discovery
+apiVersion: v1
+kind: Service
+metadata:
+  name: freeswitch-headless
+  namespace: ai-receptionist
+  labels:
+    app: freeswitch
+    service-type: headless
+spec:
+  clusterIP: None
+  ports:
+  - name: sip-udp
+    port: 5060
+    targetPort: 5060
+    protocol: UDP
+  - name: http-api
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: freeswitch
