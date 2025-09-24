@@ -36,12 +36,12 @@ class FreeSwitchIntegration:
         # Start WebSocket server for audio streaming
         start_server = websockets.serve(
             self.handle_audio_stream, 
-            "localhost", 
+            "0.0.0.0", 
             8080
         )
         
         await start_server
-        logger.info("WebSocket server started on ws://localhost:8080")
+        logger.info("WebSocket server started on ws://0.0.0.0:8080")
         
     async def handle_audio_stream(self, websocket, path):
         """Handle incoming audio stream from FreeSWITCH"""
