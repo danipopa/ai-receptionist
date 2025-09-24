@@ -2,10 +2,12 @@ import asyncio
 import websockets
 import json
 import logging
+import os
 from typing import Dict, Optional
 from datetime import datetime
 import aiohttp
 from dataclasses import dataclass
+from aiohttp import web
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -28,20 +30,73 @@ class FreeSwitchIntegration:
         self.active_calls: Dict[str, CallSession] = {}
         self.ai_engine_url = config.get("ai_engine_url", "http://localhost:8081")
         self.backend_url = config.get("backend_url", "http://localhost:3000")
+        # Network configuration from environment variables
+        self.server_host = os.getenv("FREESWITCH_HOST", "0.0.0.0")
+        self.server_port = int(os.getenv("FREESWITCH_PORT", "8080"))
         
     async def start_server(self):
-        """Start the WebSocket server for audio streaming"""
+        """Start the WebSocket server and HTTP health server"""
         logger.info("Starting FreeSWITCH Integration Server")
         
-        # Start WebSocket server for audio streaming
+        # Start HTTP server for health checks
+        app = web.Application()
+        app.router.add_get('/health', self.health_check)
+        app.router.add_get('/ready', self.readiness_check)
+        
+        runner = web.AppRunner(app)
+        await runner.setup()
+        site = web.TCPSite(runner, self.server_host, self.server_port)
+        await site.start()
+        
+        # Start WebSocket server for audio streaming on different port
+        ws_port = self.server_port + 1
         start_server = websockets.serve(
             self.handle_audio_stream, 
-            "0.0.0.0", 
-            8080
+            self.server_host, 
+            ws_port
         )
         
         await start_server
-        logger.info("WebSocket server started on ws://0.0.0.0:8080")
+        logger.info(f"HTTP server started on http://{self.server_host}:{self.server_port}")
+        logger.info(f"WebSocket server started on ws://{self.server_host}:{ws_port}")
+        
+    async def health_check(self, request):
+        """HTTP health check endpoint"""
+        return web.json_response({"status": "healthy", "service": "freeswitch-integration"})
+        
+    async def readiness_check(self, request):
+        """HTTP readiness check endpoint"""
+        # Check if we can reach dependent services
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=2)) as session:
+                # Check AI Engine
+                try:
+                    async with session.get(f"{self.ai_engine_url}/health") as resp:
+                        ai_healthy = resp.status == 200
+                except:
+                    ai_healthy = False
+                    
+                # Check Backend API  
+                try:
+                    async with session.get(f"{self.backend_url}/health") as resp:
+                        backend_healthy = resp.status == 200
+                except:
+                    backend_healthy = False
+                    
+                ready = ai_healthy and backend_healthy
+                status = "ready" if ready else "not_ready"
+                
+                return web.json_response({
+                    "status": status,
+                    "dependencies": {
+                        "ai_engine": "healthy" if ai_healthy else "unhealthy",
+                        "backend_api": "healthy" if backend_healthy else "unhealthy"
+                    }
+                }, status=200 if ready else 503)
+                
+        except Exception as e:
+            logger.error(f"Health check error: {e}")
+            return web.json_response({"status": "error", "error": str(e)}, status=503)
         
     async def handle_audio_stream(self, websocket, path):
         """Handle incoming audio stream from FreeSWITCH"""
@@ -212,9 +267,10 @@ class FreeSwitchIntegration:
 
 async def main():
     """Main entry point"""
+    # Load configuration from environment variables
     config = {
-        "ai_engine_url": "http://localhost:8081",
-        "backend_url": "http://localhost:3000"
+        "ai_engine_url": os.getenv("AI_ENGINE_URL", "http://localhost:8081"),
+        "backend_url": os.getenv("BACKEND_API_URL", "http://localhost:3000")
     }
     
     integration = FreeSwitchIntegration(config)

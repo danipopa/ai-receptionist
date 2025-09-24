@@ -49,6 +49,10 @@ spec:
           value: "16384"
         - name: RTP_PORT_MAX
           value: "32768"
+        - name: FREESWITCH_HOST
+          value: "0.0.0.0"
+        - name: FREESWITCH_PORT
+          value: "8080"
         - name: POD_IP
           valueFrom:
             fieldRef:
@@ -57,6 +61,9 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        envFrom:
+        - configMapRef:
+            name: freeswitch-config
         resources:
           requests:
             memory: "512Mi"

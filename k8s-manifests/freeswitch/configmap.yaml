@@ -10,181 +10,33 @@ kind: ConfigMap
 metadata:
   name: freeswitch-config
   namespace: ai-receptionist
+  labels:
+    app: freeswitch
+    component: telephony
 data:
-  freeswitch.xml: |
-    <?xml version="1.0"?>
-    <document type="freeswitch/xml">
-      <section name="configuration" description="Various Configuration">
-        <configuration name="console.conf" description="Console">
-          <settings>
-            <param name="colorize" value="true"/>
-            <param name="loglevel" value="info"/>
-          </settings>
-        </configuration>
-        
-        <configuration name="switch.conf" description="Core Configuration">
-          <cli-keybindings>
-            <key name="1" value="help"/>
-            <key name="2" value="status"/>
-            <key name="3" value="show channels"/>
-            <key name="4" value="show calls"/>
-          </cli-keybindings>
-          <default-ptimes>
-            <codec name="G722" ptime="20"/>
-            <codec name="PCMU" ptime="20"/>
-            <codec name="PCMA" ptime="20"/>
-            <codec name="GSM" ptime="20"/>
-          </default-ptimes>
-        </configuration>
-        
-        <configuration name="sofia.conf" description="SIP Configuration">
-          <global_settings>
-            <param name="log-level" value="0"/>
-            <param name="debug-presence" value="0"/>
-            <param name="auto-restart" value="false"/>
-          </global_settings>
-          
-          <profiles>
-            <profile name="internal">
-              <aliases>
-                <alias name="default"/>
-              </aliases>
-              <gateways>
-              </gateways>
-              <domains>
-                <domain name="all" alias="false" parse="true"/>
-              </domains>
-              <settings>
-                <param name="debug" value="0"/>
-                <param name="sip-trace" value="no"/>
-                <param name="sip-capture" value="no"/>
-                <param name="rfc2833-pt" value="101"/>
-                <param name="sip-port" value="5060"/>
-                <param name="dialplan" value="XML"/>
-                <param name="context" value="default"/>
-                <param name="dtmf-duration" value="2000"/>
-                <param name="inbound-codec-prefs" value="PCMU,PCMA"/>
-                <param name="outbound-codec-prefs" value="PCMU,PCMA"/>
-                <param name="rtp-ip" value="auto"/>
-                <param name="sip-ip" value="auto"/>
-                <param name="ext-rtp-ip" value="auto"/>
-                <param name="ext-sip-ip" value="auto"/>
-                <param name="rtp-timeout-sec" value="300"/>
-                <param name="rtp-hold-timeout-sec" value="1800"/>
-                <param name="manage-presence" value="false"/>
-                <param name="max-proceeding" value="1000"/>
-                <param name="inbound-use-callid-as-uuid" value="true"/>
-                <param name="outbound-use-uuid-as-callid" value="true"/>
-                <param name="rtp-port-min" value="16384"/>
-                <param name="rtp-port-max" value="32768"/>
-              </settings>
-            </profile>
-          </profiles>
-        </configuration>
-      </section>
-
-      <section name="dialplan" description="Regex/XML Dialplan">
-        <context name="default">
-          <extension name="ai_receptionist">
-            <condition field="destination_number" expression="^(.*)$">
-              <action application="answer"/>
-              <action application="sleep" data="1000"/>
-              <action application="socket" data="localhost:8080 async full"/>
-            </condition>
-          </extension>
-        </context>
-      </section>
-    </document>
-
-  ai-service.py: |
-    import asyncio
-    import logging
-    import os
-    from typing import Dict, Any
-    import aiohttp
-    import json
-
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
-
-    class AIReceptionistService:
-        def __init__(self):
-            self.ai_engine_url = os.getenv('AI_ENGINE_URL', 'http://ai-engine:8000')
-            self.backend_api_url = os.getenv('BACKEND_API_URL', 'http://backend-api:3000/api/v1')
-            
-        async def handle_call(self, call_data: Dict[str, Any]) -> Dict[str, Any]:
-            """Handle incoming call with AI processing"""
-            try:
-                # Extract call information
-                caller_id = call_data.get('caller_id')
-                called_number = call_data.get('called_number')
-                
-                logger.info(f"Processing call from {caller_id} to {called_number}")
-                
-                # Look up customer and phone number
-                customer_info = await self.lookup_customer(called_number)
-                
-                # Get AI response
-                ai_response = await self.get_ai_response(caller_id, customer_info)
-                
-                # Log call transcript
-                await self.log_call_transcript(caller_id, called_number, ai_response)
-                
-                return {
-                    'status': 'success',
-                    'response': ai_response.get('text', 'Hello, how can I help you today?'),
-                    'audio_url': ai_response.get('audio_url')
-                }
-                
-            except Exception as e:
-                logger.error(f"Error handling call: {e}")
-                return {
-                    'status': 'error',
-                    'response': 'I apologize, but I am experiencing technical difficulties. Please try again later.'
-                }
-        
-        async def lookup_customer(self, phone_number: str) -> Dict[str, Any]:
-            """Look up customer information from backend API"""
-            try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(f"{self.backend_api_url}/phone_numbers/search?number={phone_number}") as response:
-                        if response.status == 200:
-                            return await response.json()
-                        return {}
-            except Exception as e:
-                logger.error(f"Error looking up customer: {e}")
-                return {}
-        
-        async def get_ai_response(self, caller_id: str, customer_info: Dict[str, Any]) -> Dict[str, Any]:
-            """Get AI-generated response from AI engine"""
-            try:
-                payload = {
-                    'caller_id': caller_id,
-                    'customer_info': customer_info,
-                    'context': 'phone_call'
-                }
-                
-                async with aiohttp.ClientSession() as session:
-                    async with session.post(f"{self.ai_engine_url}/generate_response", json=payload) as response:
-                        if response.status == 200:
-                            return await response.json()
-                        return {'text': 'Hello, how can I help you today?'}
-            except Exception as e:
-                logger.error(f"Error getting AI response: {e}")
-                return {'text': 'Hello, how can I help you today?'}
-        
-        async def log_call_transcript(self, caller_id: str, called_number: str, ai_response: Dict[str, Any]):
-            """Log call transcript to backend API"""
-            try:
-                payload = {
-                    'caller_id': caller_id,
-                    'called_number': called_number,
-                    'transcript': ai_response.get('text', ''),
-                    'ai_response': ai_response.get('text', ''),
-                    'call_status': 'completed',
-                    'started_at': None,  # Will be set by backend
-                    'ended_at': None     # Will be set by backend
-                }
+  # FreeSWITCH Integration Server Configuration
+  server.conf: |
+    # Network Configuration
+    FREESWITCH_HOST=0.0.0.0
+    FREESWITCH_PORT=8080
+    
+    # Service URLs
+    AI_ENGINE_URL=http://ai-engine:8000
+    BACKEND_API_URL=http://backend-api:3000/api/v1
+    
+    # Logging
+    LOG_LEVEL=INFO
+    
+    # SIP Configuration
+    SIP_PORT=5060
+    RTP_PORT_MIN=16384
+    RTP_PORT_MAX=32768
+  
+  # Health check script
+  healthcheck.sh: |
+    #!/bin/sh
+    # Simple health check - verify the WebSocket server is responding
+    curl -f http://localhost:8080/health || exit 1
                 
                 async with aiohttp.ClientSession() as session:
                     async with session.post(f"{self.backend_api_url}/call_transcripts", json=payload) as response:
