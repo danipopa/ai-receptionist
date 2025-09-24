@@ -80,8 +80,17 @@ build_images() {
 deploy_to_k8s() {
     log_info "Deploying to Kubernetes..."
     
-    # Create namespace
+    # Create namespace first
     log_info "Creating namespace..."
+    kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
+    
+    # Create storage class and persistent volumes
+    log_info "Setting up storage..."
+    kubectl apply -f k8s-manifests/storage-class.yaml
+    kubectl apply -f k8s-manifests/persistent-volumes.yaml
+    
+    # Create configmaps
+    log_info "Creating configmaps..."
     kubectl apply -f k8s-manifests/freeswitch/configmap.yaml
     
     # Deploy databases first
