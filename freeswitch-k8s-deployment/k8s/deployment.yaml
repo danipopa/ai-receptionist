@@ -19,16 +19,31 @@ spec:
         ports:
         - containerPort: 5060
         - containerPort: 8080
+        env:
+        - name: FREESWITCH_HOST
+          value: "0.0.0.0"
+        - name: FREESWITCH_PORT
+          value: "8080"
+        - name: AI_ENGINE_URL
+          value: "http://ai-engine:8000"
+        - name: BACKEND_API_URL
+          value: "http://backend-api:3000/api/v1"
         volumeMounts:
         - name: freeswitch-config
-          mountPath: /usr/local/freeswitch/conf
-        readinessProbe:
-          exec:
-            command:
-            - /usr/local/bin/healthcheck.sh
+          mountPath: /app/config
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
           initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 10
           periodSeconds: 10
       volumes:
       - name: freeswitch-config
         configMap:
-          name: freeswitch-configmap
+          name: freeswitch-config

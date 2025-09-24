@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 # Set working directory
 WORKDIR /app
@@ -6,8 +6,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+# Install all dependencies (including dev dependencies needed for build)
+RUN npm ci && npm cache clean --force
 
 # Copy source code
 COPY . .
@@ -21,12 +21,12 @@ RUN chown -R nuxt:nuxt /app
 USER nuxt
 
 # Expose port
-EXPOSE ${PORT:-3001}
+EXPOSE 3001
 
 # Environment variables
-ENV API_HOST=${API_HOST:-localhost}
-ENV API_PORT=${API_PORT:-3000}
-ENV API_BASE_URL=${API_BASE_URL:-http://localhost:3000/api/v1}
+ENV API_HOST=backend-api
+ENV API_PORT=3000
+ENV API_BASE_URL=http://backend-api:3000/api/v1
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
