@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: freeswitch
-        image: 176.9.65.80/freeswitch:latest
+        image: 176.9.65.80:5000/freeswitch:latest
         ports:
         - containerPort: 5060
         - containerPort: 8080

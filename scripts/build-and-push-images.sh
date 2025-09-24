@@ -6,7 +6,7 @@
 set -e
 
 # Default to your private registry
-REGISTRY=${1:-"176.9.65.80"}
+REGISTRY=${1:-"176.9.65.80:5000"}
 VERSION="latest"
 
 echo "🏗️  Building and pushing AI Receptionist images to $REGISTRY"

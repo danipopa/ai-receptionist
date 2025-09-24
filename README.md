@@ -33,6 +33,21 @@ The AI Receptionist system consists of four main components:
 3. **AI Engine (Python/FastAPI)** - Speech processing, natural language understanding, and response generation
 4. **AI FreeSWITCH (Python)** - Telephony integration and real-time audio streaming
 
+## 📁 Project Structure
+
+```
+ai-receptionist/
+├── ai-engine/              # Python AI Engine service
+├── ai-freeswitch/          # Python FreeSWITCH integration
+├── backend-ai-receptionist/ # Rails 8 API backend
+├── frontend-ai-receptionist/ # Nuxt.js frontend
+├── freeswitch-k8s-deployment/ # FreeSWITCH Kubernetes configs
+├── k8s-manifests/          # Main Kubernetes deployment files
+├── docker/                 # Docker compose and configurations
+├── scripts/                # Deployment and utility scripts
+└── docs/                   # Documentation and guides
+```
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -57,12 +72,12 @@ The AI Receptionist system consists of four main components:
 
 3. **Start all services**
    ```bash
-   docker-compose up -d
+   docker-compose -f docker/docker-compose.yml up -d
    ```
 
 4. **Run database migrations (Rails)**
    ```bash
-   docker-compose exec backend rails db:create db:migrate
+   docker-compose -f docker/docker-compose.yml exec backend rails db:create db:migrate
    ```
 
 5. **Access the services**
@@ -367,6 +382,26 @@ For support and questions:
 - Review service logs for debugging information
 
 ---
+
+## 📚 Documentation
+
+For detailed information, see the documentation in the `docs/` directory:
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) - System architecture and design
+- [`docs/DEPLOYMENT-STEPS.md`](docs/DEPLOYMENT-STEPS.md) - Step-by-step deployment guide  
+- [`docs/KUBERNETES-DEPLOYMENT.md`](docs/KUBERNETES-DEPLOYMENT.md) - Kubernetes deployment instructions
+- [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) - Development setup and guidelines
+- [`docs/CONFIG.md`](docs/CONFIG.md) - Configuration reference
+- [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) - Common issues and solutions
+
+## 🛠️ Scripts
+
+Utility scripts are located in the `scripts/` directory:
+
+- `scripts/build-and-push-images.sh` - Build and push Docker images
+- `scripts/deploy-k8s.sh` - Deploy to Kubernetes
+- `scripts/setup-storage.sh` - Set up persistent storage
+- `scripts/cleanup-storage.sh` - Clean up storage volumes
 
 ## Troubleshooting
 

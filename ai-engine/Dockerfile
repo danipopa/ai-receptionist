@@ -10,7 +10,10 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     libssl-dev \
     portaudio19-dev \
+    flac \
+    sox \
     ffmpeg \
+    alsa-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching

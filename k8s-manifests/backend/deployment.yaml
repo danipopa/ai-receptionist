@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: backend-api
-        image: 176.9.65.80/ai-receptionist/backend:latest
+        image: 176.9.65.80:5000/ai-receptionist/backend:latest
         imagePullPolicy: IfNotPresent
         ports:
         - name: http
@@ -88,7 +88,7 @@ spec:
       terminationGracePeriodSeconds: 30
       initContainers:
       - name: db-migrate
-        image: ai-receptionist/backend:latest
+        image: 176.9.65.80:5000/ai-receptionist/backend:latest
         command: ['bundle', 'exec', 'rails', 'db:migrate']
         env:
         - name: RAILS_ENV
