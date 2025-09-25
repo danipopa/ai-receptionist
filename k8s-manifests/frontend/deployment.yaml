@@ -25,7 +25,7 @@ spec:
       containers:
       - name: frontend
         image: 176.9.65.80:5000/ai-receptionist/frontend:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - name: http
           containerPort: 3000
