@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from dataclasses import dataclass, asdict
 from uuid import uuid4
 
-import aioredis
+import redis.asyncio as aioredis
 import openai
 from fastapi import FastAPI, WebSocket, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
