@@ -7,9 +7,7 @@ metadata:
     app: freeswitch
     service-type: sip
   annotations:
-    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
-    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "udp"
-    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    metallb.universe.tf/allow-shared-ip: "ai-receptionist-shared"
 spec:
   type: LoadBalancer
   loadBalancerIP: 88.198.85.74
@@ -35,9 +33,7 @@ metadata:
     app: freeswitch
     service-type: rtp
   annotations:
-    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
-    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "udp"
-    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    metallb.universe.tf/allow-shared-ip: "ai-receptionist-shared"
 spec:
   type: LoadBalancer
   loadBalancerIP: 88.198.85.74

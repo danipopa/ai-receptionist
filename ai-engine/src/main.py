@@ -104,6 +104,20 @@ class AIEngine:
         async def health_check():
             return {"status": "healthy", "timestamp": datetime.now().isoformat()}
             
+        @self.app.get("/ready")
+        async def readiness_check():
+            """Check if the service is ready to accept traffic"""
+            try:
+                # Check Redis connection
+                if self.redis:
+                    await self.redis.ping()
+                    return {"status": "ready", "redis": "connected", "timestamp": datetime.now().isoformat()}
+                else:
+                    return {"status": "not_ready", "redis": "disconnected", "timestamp": datetime.now().isoformat()}, 503
+            except Exception as e:
+                logger.error(f"Readiness check failed: {e}")
+                return {"status": "not_ready", "error": str(e), "timestamp": datetime.now().isoformat()}, 503
+            
         @self.app.post("/session/create")
         async def create_session(request: CreateSessionRequest):
             return await self.create_conversation_session(request)

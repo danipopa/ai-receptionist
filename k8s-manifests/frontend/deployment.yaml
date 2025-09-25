@@ -33,6 +33,8 @@ spec:
         env:
         - name: BACKEND_API_URL
           value: "http://backend-api:3000/api/v1"
+        - name: NUXT_HOST
+          value: "0.0.0.0"
         - name: NUXT_PORT
           value: "3000"
         - name: NODE_ENV
@@ -79,6 +81,8 @@ metadata:
   labels:
     app: frontend
     component: ui
+  annotations:
+    metallb.universe.tf/allow-shared-ip: "ai-receptionist-shared"
 spec:
   type: LoadBalancer
   loadBalancerIP: 88.198.85.74
