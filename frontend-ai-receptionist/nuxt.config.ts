@@ -12,7 +12,10 @@ export default defineNuxtConfig({
     // Remove any database configurations
     experimental: {
       wasm: false
-    }
+    },
+    // Server configuration for production
+    host: '0.0.0.0',
+    port: 3000
   },
 
   // API configuration for backend communication

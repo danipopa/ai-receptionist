@@ -81,6 +81,7 @@ metadata:
     component: ui
 spec:
   type: LoadBalancer
+  loadBalancerIP: 88.198.85.74
   ports:
   - port: 80
     targetPort: 3000

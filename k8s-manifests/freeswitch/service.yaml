@@ -12,6 +12,7 @@ metadata:
     service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
 spec:
   type: LoadBalancer
+  loadBalancerIP: 88.198.85.74
   externalTrafficPolicy: Local
   sessionAffinity: ClientIP
   sessionAffinityConfig:
@@ -39,6 +40,7 @@ metadata:
     service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
 spec:
   type: LoadBalancer
+  loadBalancerIP: 88.198.85.74
   externalTrafficPolicy: Local
   sessionAffinity: ClientIP
   sessionAffinityConfig:
