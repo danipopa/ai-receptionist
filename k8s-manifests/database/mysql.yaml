@@ -153,6 +153,9 @@ spec:
     spec:
       accessModes: ["ReadWriteOnce"]
       storageClassName: local-storage
+      selector:
+        matchLabels:
+          app: mysql
       resources:
         requests:
           storage: 50Gi

@@ -97,6 +97,9 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
+  selector:
+    matchLabels:
+      app: redis
   resources:
     requests:
       storage: 10Gi

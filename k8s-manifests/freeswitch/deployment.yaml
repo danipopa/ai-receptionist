@@ -124,6 +124,9 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
+  selector:
+    matchLabels:
+      app: freeswitch
   resources:
     requests:
       storage: 10Gi
