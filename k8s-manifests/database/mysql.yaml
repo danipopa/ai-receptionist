@@ -33,19 +33,25 @@ spec:
           mkdir -p /var/run/mysqld
           chown -R mysql:mysql /var/run/mysqld
           
-          # Check if MySQL data directory exists and is empty
-          if [ ! -d "/var/lib/mysql/mysql" ]; then
+          # Ensure proper ownership of the data directory first
+          chown -R mysql:mysql /var/lib/mysql
+          
+          # Check if MySQL data directory exists and is properly initialized
+          if [ ! -f "/var/lib/mysql/mysql/user.MYD" ]; then
             echo "MySQL system tables not found. Initializing database..."
-            
-            # Ensure proper ownership of the data directory
-            chown -R mysql:mysql /var/lib/mysql
             
             # Remove any socket files that might cause issues
             rm -f /var/lib/mysql/mysql.sock /var/lib/mysql/mysql.sock.lock
             rm -f /var/run/mysqld/mysqld.sock /var/run/mysqld/mysqld.sock.lock
             
+            # Clear the directory completely to ensure clean initialization
+            rm -rf /var/lib/mysql/*
+            
             # Initialize the MySQL database with system tables
             mysqld --initialize-insecure --user=mysql --datadir=/var/lib/mysql
+            
+            # Ensure proper ownership after initialization
+            chown -R mysql:mysql /var/lib/mysql
             
             echo "MySQL database initialized successfully"
           else
