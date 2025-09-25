@@ -25,7 +25,7 @@ spec:
       containers:
       - name: ai-engine
         image: 176.9.65.80:5000/ai-receptionist/ai-engine:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - name: http
           containerPort: 8000
