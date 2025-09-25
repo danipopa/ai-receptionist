@@ -106,11 +106,11 @@ spec:
               key: user-password
         resources:
           requests:
-            memory: "1Gi"
-            cpu: "500m"
+            memory: "512Mi"
+            cpu: "250m"
           limits:
-            memory: "4Gi"
-            cpu: "2000m"
+            memory: "2Gi"
+            cpu: "1000m"
         volumeMounts:
         - name: mysql-data
           mountPath: /var/lib/mysql
@@ -202,30 +202,17 @@ metadata:
 data:
   my.cnf: |
     [mysqld]
-    # Performance settings
-    innodb_buffer_pool_size = 2G
-    innodb_log_file_size = 256M
-    innodb_flush_log_at_trx_commit = 2
-    innodb_flush_method = O_DIRECT
-    max_connections = 500
-    
-    # Logging
-    slow_query_log = 1
-    slow_query_log_file = /var/lib/mysql/slow.log
-    long_query_time = 2
-    
-    # Binary logging for replication
-    log-bin = mysql-bin
-    binlog_format = ROW
-    binlog_expire_logs_seconds = 604800  # 7 days
-    
-    # Character set
+    # Basic settings for development/testing
     character-set-server = utf8mb4
     collation-server = utf8mb4_unicode_ci
     
     # Security and compatibility
     skip-host-cache
     skip-name-resolve
+    
+    # Reduce resource usage for development
+    innodb_buffer_pool_size = 512M
+    max_connections = 100
     
     [mysql]
     default-character-set = utf8mb4
