@@ -18,6 +18,7 @@ import speech_recognition as sr
 from gtts import gTTS
 import numpy as np
 from scipy.io import wavfile
+import uvicorn
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -429,7 +430,6 @@ class AIEngine:
 
 async def main():
     """Main entry point"""
-    import uvicorn
     from os import getenv
     
     config = {
@@ -445,12 +445,18 @@ async def main():
     
     logger.info("Starting AI Engine server...")
     
-    await uvicorn.run(
-        ai_engine.app,
-        host=config["HOST"],
-        port=config["PORT"],
-        log_level="info" if config["DEBUG"] else "warning"
+    # Create and configure the uvicorn server
+    server = uvicorn.Server(
+        uvicorn.Config(
+            ai_engine.app,
+            host=config["HOST"],
+            port=config["PORT"],
+            log_level="info" if config["DEBUG"] else "warning"
+        )
     )
+    
+    # Start the server within the existing event loop
+    await server.serve()
 
 if __name__ == "__main__":
     asyncio.run(main())
