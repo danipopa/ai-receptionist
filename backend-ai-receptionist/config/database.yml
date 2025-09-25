@@ -52,9 +52,9 @@ test:
 production:
   primary: &primary_production
     <<: *default
-    database: backend_ai_receptionist_production
-    username: backend_ai_receptionist
-    password: <%= ENV["BACKEND_AI_RECEPTIONIST_DATABASE_PASSWORD"] %>
+    database: <%= ENV.fetch("DB_NAME") { "backend_ai_receptionist_production" } %>
+    username: <%= ENV.fetch("DB_USER") { "root" } %>
+    password: <%= ENV["DB_PASSWORD"] %>
   cache:
     <<: *primary_production
     database: backend_ai_receptionist_production_cache
