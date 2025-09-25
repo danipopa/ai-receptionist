@@ -104,6 +104,11 @@ spec:
               key: mysql-password
         - name: DB_NAME
           value: "ai_receptionist_production"
+        - name: SECRET_KEY_BASE
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: secret-key-base
 ---
 apiVersion: v1
 kind: Service
