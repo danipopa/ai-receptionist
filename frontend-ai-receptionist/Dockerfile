@@ -21,16 +21,17 @@ RUN chown -R nuxt:nuxt /app
 USER nuxt
 
 # Expose port
-EXPOSE 3001
+EXPOSE 3000
 
 # Environment variables
 ENV API_HOST=backend-api
 ENV API_PORT=3000
 ENV API_BASE_URL=http://backend-api:3000/api/v1
+ENV PORT=3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:${PORT:-3001}/ || exit 1
+    CMD curl -f http://localhost:3000/ || exit 1
 
 # Start the application
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "preview"]
