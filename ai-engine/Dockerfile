@@ -31,11 +31,11 @@ RUN useradd -m -u 1000 aiengine && chown -R aiengine:aiengine /app
 USER aiengine
 
 # Expose port
-EXPOSE 8081
+EXPOSE 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8081/health || exit 1
+    CMD curl -f http://localhost:8000/health || exit 1
 
 # Run the application
 CMD ["python", "src/main.py"]
