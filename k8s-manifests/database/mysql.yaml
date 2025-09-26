@@ -147,14 +147,31 @@ spec:
           failureThreshold: 3
       volumes:
       - name: mysql-data
-        hostPath:
-          path: /home/storage/ns/ai-receptionist/mysql
-          type: DirectoryOrCreate
+        persistentVolumeClaim:
+          claimName: mysql-pvc
       - name: mysql-config
         configMap:
           name: mysql-config
       - name: mysql-socket
         emptyDir: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+  namespace: ai-receptionist
+  labels:
+    app: mysql
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  selector:
+    matchLabels:
+      app: mysql
+  resources:
+    requests:
+      storage: 50Gi
 ---
 apiVersion: v1
 kind: Service
