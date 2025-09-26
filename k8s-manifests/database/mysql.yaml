@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: mysql
   namespace: ai-receptionist
@@ -7,6 +7,7 @@ metadata:
     app: mysql
     component: database
 spec:
+  serviceName: mysql-headless
   replicas: 1
   selector:
     matchLabels:
@@ -146,32 +147,23 @@ spec:
           timeoutSeconds: 5
           failureThreshold: 3
       volumes:
-      - name: mysql-data
-        persistentVolumeClaim:
-          claimName: mysql-pvc
       - name: mysql-config
         configMap:
           name: mysql-config
       - name: mysql-socket
         emptyDir: {}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mysql-pvc
-  namespace: ai-receptionist
-  labels:
-    app: mysql
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: local-storage
-  selector:
-    matchLabels:
-      app: mysql
-  resources:
-    requests:
-      storage: 50Gi
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: local-storage
+      selector:
+        matchLabels:
+          app: mysql
+      resources:
+        requests:
+          storage: 50Gi
 ---
 apiVersion: v1
 kind: Service
