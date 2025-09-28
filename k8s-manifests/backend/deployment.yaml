@@ -36,7 +36,7 @@ spec:
         - name: DB_HOST
           value: "mysql"
         - name: DB_USER
-          value: "root"
+          value: "ai_receptionist"
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -136,8 +136,8 @@ metadata:
 type: Opaque
 data:
   # Base64 encoded secrets
-  # Generate with: echo -n "your-secret" | base64
-  mysql-password: bXlzcWwtcGFzc3dvcmQ=
+  # Generate with: echo -n "your-new-password" | base64
+  mysql-password: bmV3LXBhc3N3b3Jk
   secret-key-base: eW91ci1zZWNyZXQta2V5LWJhc2UtaGVyZQ==
 ---
 apiVersion: autoscaling/v2
