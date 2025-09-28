@@ -136,8 +136,8 @@ metadata:
 type: Opaque
 data:
   # Base64 encoded secrets
-  # Generate with: echo -n "your-new-password" | base64
-  mysql-password: bmV3LXBhc3N3b3Jk
+  # Generate with: echo -n "mysql-user-password" | base64
+  mysql-password: bXlzcWwtdXNlci1wYXNzd29yZA==
   secret-key-base: eW91ci1zZWNyZXQta2V5LWJhc2UtaGVyZQ==
 ---
 apiVersion: autoscaling/v2
