@@ -23,6 +23,8 @@ data:
 
     [mysql]
     default-character-set = utf8mb4
+
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
