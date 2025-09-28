@@ -1,3 +1,35 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: mysql-local
+provisioner: rancher.io/local-path            # or your cluster’s dynamic provisioner
+volumeBindingMode: WaitForFirstConsumer       # schedules pod first, then binds PV on that node
+reclaimPolicy: Delete                         # or Retain, your choice
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ai-receptionist-mysql-pv
+  labels:
+    type: local
+    app: mysql
+spec:
+  storageClassName: mysql-local
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/home/storage/ns/ai-receptionist/mysql"
+    type: DirectoryOrCreate
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - k8svm
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -103,7 +135,7 @@ spec:
       name: mysql-data
     spec:
       accessModes: ["ReadWriteOnce"]
-      storageClassName: local-storage
+      storageClassName: mysql-local
       resources:
         requests:
           storage: 50Gi
