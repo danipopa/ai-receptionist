@@ -175,32 +175,6 @@ spec:
     app: mysql
 ---
 apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: mysql-config
-  namespace: ai-receptionist
-data:
-  my.cnf: |
-    [mysqld]
-    # Basic settings for development/testing
-    character-set-server = utf8mb4
-    collation-server = utf8mb4_unicode_ci
-    
-    # Security and compatibility
-    skip-host-cache
-    skip-name-resolve
-    
-    # Reduce resource usage for development
-    innodb_buffer_pool_size = 512M
-    max_connections = 100
-    
-    [mysql]
-    default-character-set = utf8mb4
-    
-    [client]
-    default-character-set = utf8mb4
----
-apiVersion: v1
 kind: Secret
 metadata:
   name: mysql-secrets
