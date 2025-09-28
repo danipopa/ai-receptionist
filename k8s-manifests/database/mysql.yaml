@@ -54,6 +54,36 @@ spec:
             # Initialize the MySQL database with system tables
             mysqld --initialize-insecure --user=mysql --datadir=/var/lib/mysql
             
+            # Start MySQL temporarily to create user with proper permissions
+            echo "Starting temporary MySQL server to create users..."
+            mysqld --user=mysql --datadir=/var/lib/mysql --skip-networking --socket=/var/run/mysqld/mysqld.sock &
+            MYSQL_PID=$!
+            
+            # Wait for MySQL to start
+            for i in {1..30}; do
+              if mysql --socket=/var/run/mysqld/mysqld.sock -e "SELECT 1" 2>/dev/null; then
+                echo "MySQL is ready"
+                break
+              fi
+              echo "Waiting for MySQL to start... ($i/30)"
+              sleep 2
+            done
+            
+            # Create database and user with network access using root
+            echo "Creating database and user with network permissions..."
+            mysql --socket=/var/run/mysqld/mysqld.sock -u root -p"${MYSQL_ROOT_PASSWORD}" -e "
+              CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;
+              CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
+              GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USER}'@'%';
+              FLUSH PRIVILEGES;
+              SELECT User, Host FROM mysql.user WHERE User='${MYSQL_USER}';
+            "
+            
+            # Stop the temporary MySQL instance
+            echo "Stopping temporary MySQL server..."
+            kill $MYSQL_PID
+            wait $MYSQL_PID 2>/dev/null || true
+            
             # Ensure proper ownership after initialization
             chown -R mysql:mysql /var/lib/mysql
             
