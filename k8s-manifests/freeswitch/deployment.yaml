@@ -19,6 +19,10 @@ spec:
         app: freeswitch-server
         component: telephony-core
     spec:
+      # Run as root to ensure proper permissions for mounted volumes
+      securityContext:
+        fsGroup: 996  # freeswitch group
+        runAsUser: 0  # root (FreeSWITCH will drop to freeswitch user)
       containers:
       - name: freeswitch
         image: 176.9.65.80:5000/ai-receptionist/freeswitch-server:latest
