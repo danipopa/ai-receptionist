@@ -102,4 +102,4 @@ spec:
   storageClassName: local-storage
   selector:
     matchLabels:
-      pv-name: freeswitch-data-pv
+      pv-name: ai-receptionist-freeswitch-data-pv

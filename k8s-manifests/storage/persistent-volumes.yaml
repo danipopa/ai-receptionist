@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: freeswitch-data-pv
+  name: ai-receptionist-freeswitch-data-pv
   labels:
     app: freeswitch-server
     component: telephony-core
-    pv-name: freeswitch-data-pv
+    pv-name: ai-receptionist-freeswitch-data-pv
 spec:
   capacity:
     storage: 10Gi
@@ -26,11 +26,11 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: ollama-models-pv
+  name: ai-receptionist-ollama-models-pv
   labels:
     app: ollama
     component: ai-engine
-    pv-name: ollama-models-pv
+    pv-name: ai-receptionist-ollama-models-pv
 spec:
   capacity:
     storage: 50Gi
@@ -51,11 +51,11 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: ollama-data-pv
+  name: ai-receptionist-ollama-data-pv
   labels:
     app: ollama
     component: ai-engine
-    pv-name: ollama-data-pv
+    pv-name: ai-receptionist-ollama-data-pv
 spec:
   capacity:
     storage: 10Gi
