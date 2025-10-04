@@ -1,0 +1,100 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ollama-init-models
+  namespace: ai-receptionist
+  labels:
+    app: ollama
+    component: ai-engine
+    job-type: initialization
+spec:
+  ttlSecondsAfterFinished: 3600  # Clean up 1 hour after completion
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: ollama-init
+        component: ai-engine
+    spec:
+      restartPolicy: OnFailure
+      initContainers:
+      # Wait for Ollama service to be ready
+      - name: wait-for-ollama
+        image: busybox:latest
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for Ollama service to be ready..."
+          until wget -q --spider http://ollama.ai-receptionist.svc.cluster.local:11434/; do
+            echo "Ollama not ready yet, waiting..."
+            sleep 5
+          done
+          echo "Ollama is ready!"
+      containers:
+      - name: pull-models
+        image: curlimages/curl:latest
+        command:
+        - sh
+        - -c
+        - |
+          set -e
+          OLLAMA_HOST="http://ollama.ai-receptionist.svc.cluster.local:11434"
+          
+          echo "============================================"
+          echo "Starting Ollama Model Initialization"
+          echo "============================================"
+          
+          # Function to pull a model
+          pull_model() {
+            MODEL=$1
+            echo ""
+            echo "Pulling model: $MODEL"
+            echo "This may take several minutes..."
+            curl -X POST "$OLLAMA_HOST/api/pull" \
+              -H "Content-Type: application/json" \
+              -d "{\"name\": \"$MODEL\"}" \
+              --max-time 1800  # 30 minutes timeout per model
+            
+            if [ $? -eq 0 ]; then
+              echo "✓ Successfully pulled $MODEL"
+            else
+              echo "✗ Failed to pull $MODEL"
+              return 1
+            fi
+          }
+          
+          # Pull recommended models for AI receptionist
+          # Start with smaller, faster models
+          
+          echo ""
+          echo "Pulling Llama 3.2 (3B) - Fast, efficient for conversations"
+          pull_model "llama3.2:3b"
+          
+          # Uncomment to add more models:
+          
+          # echo ""
+          # echo "Pulling Mistral (7B) - Good balance of speed and quality"
+          # pull_model "mistral:7b"
+          
+          # echo ""
+          # echo "Pulling Llama 2 (7B) - General purpose, good for chat"
+          # pull_model "llama2:7b"
+          
+          # echo ""
+          # echo "Pulling Neural Chat (7B) - Optimized for conversations"
+          # pull_model "neural-chat:7b"
+          
+          # echo ""
+          # echo "Pulling Phi-2 (2.7B) - Very fast, good for simple tasks"
+          # pull_model "phi:2.7b"
+          
+          echo ""
+          echo "============================================"
+          echo "Model initialization complete!"
+          echo "============================================"
+          
+          # List available models
+          echo ""
+          echo "Available models:"
+          curl -s "$OLLAMA_HOST/api/tags" | grep -o '"name":"[^"]*"' || echo "Failed to list models"

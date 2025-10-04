@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ollama-models-pvc
+  namespace: ai-receptionist
+  labels:
+    app: ollama
+    component: ai-engine
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi  # LLM models are large (7B model ~4GB, 13B ~8GB, etc.)
+  storageClassName: local-storage
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ollama-data-pvc
+  namespace: ai-receptionist
+  labels:
+    app: ollama
+    component: ai-engine
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi  # For logs, temp files, etc.
+  storageClassName: local-storage

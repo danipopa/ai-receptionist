@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-ai-config
+  namespace: ai-receptionist
+  labels:
+    app: backend-ai-receptionist
+    component: api
+data:
+  # AI Provider Configuration
+  AI_PROVIDER: "kubernetes-ollama"
+  
+  # Ollama Configuration
+  OLLAMA_URL: "http://ollama.ai-receptionist.svc.cluster.local:11434"
+  OLLAMA_TEXT_MODEL: "llama3.2:3b"
+  OLLAMA_SPEECH_MODEL: "whisper"
+  
+  # Optional: Additional models for different purposes
+  # OLLAMA_TEXT_MODEL: "mistral:7b"  # For better reasoning
+  # OLLAMA_TEXT_MODEL: "neural-chat:7b"  # Optimized for conversations
+  
+  # AI Engine Settings
+  AI_ENGINE_TIMEOUT: "30"
+  AI_ENGINE_MAX_RETRIES: "3"
+  
+  # Speech Settings
+  TTS_VOICE: "alloy"
+  STT_LANGUAGE: "en-US"
