@@ -4,7 +4,7 @@ metadata:
   name: freeswitch-sip
   namespace: ai-receptionist
   labels:
-    app: freeswitch
+    app: freeswitch-server
     service-type: sip
   annotations:
     metallb.universe.tf/allow-shared-ip: "ai-receptionist-shared"
@@ -22,7 +22,7 @@ spec:
     targetPort: 5060
     protocol: UDP
   selector:
-    app: freeswitch
+    app: freeswitch-server
 ---
 apiVersion: v1
 kind: Service
@@ -30,7 +30,7 @@ metadata:
   name: freeswitch-rtp
   namespace: ai-receptionist
   labels:
-    app: freeswitch
+    app: freeswitch-server
     service-type: rtp
   annotations:
     metallb.universe.tf/allow-shared-ip: "ai-receptionist-shared"
@@ -67,25 +67,25 @@ spec:
   # Add more RTP ports as needed for concurrent calls
   # For production, consider using a range or separate service per pod
   selector:
-    app: freeswitch
+    app: freeswitch-server
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: freeswitch-api
+  name: freeswitch-event-socket
   namespace: ai-receptionist
   labels:
-    app: freeswitch
-    service-type: api
+    app: freeswitch-server
+    service-type: event-socket
 spec:
   type: ClusterIP
   ports:
-  - name: http-api
-    port: 8080
-    targetPort: 8080
+  - name: event-socket
+    port: 8021
+    targetPort: 8021
     protocol: TCP
   selector:
-    app: freeswitch
+    app: freeswitch-server
 ---
 # Headless service for internal pod discovery
 apiVersion: v1
@@ -94,10 +94,17 @@ metadata:
   name: freeswitch-headless
   namespace: ai-receptionist
   labels:
-    app: freeswitch
+    app: freeswitch-server
     service-type: headless
 spec:
   clusterIP: None
+  ports:
+  - name: event-socket
+    port: 8021
+    targetPort: 8021
+    protocol: TCP
+  selector:
+    app: freeswitch-server
   ports:
   - name: sip-udp
     port: 5060

@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-freeswitch
+  namespace: ai-receptionist
+  labels:
+    app: ai-freeswitch
+    component: telephony-integration
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: ai-freeswitch
+  template:
+    metadata:
+      labels:
+        app: ai-freeswitch
+        component: telephony-integration
+    spec:
+      containers:
+      - name: ai-freeswitch
+        image: 176.9.65.80:5000/ai-receptionist/ai-freeswitch:latest
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        env:
+        - name: FREESWITCH_HOST
+          value: "freeswitch-event-socket"
+        - name: FREESWITCH_PORT
+          value: "8021"
+        - name: FREESWITCH_PASSWORD
+          value: "ClueCon"  # Default FreeSWITCH ESL password
+        - name: AI_ENGINE_URL
+          value: "http://ai-engine:8000"
+        - name: BACKEND_API_URL
+          value: "http://backend-ai-receptionist:3000/api/v1"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: logs
+          mountPath: /app/logs
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 10
+      volumes:
+      - name: logs
+        emptyDir: {}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30

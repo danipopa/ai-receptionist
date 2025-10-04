@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-freeswitch
+  namespace: ai-receptionist
+  labels:
+    app: ai-freeswitch
+    component: telephony-integration
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: ai-freeswitch

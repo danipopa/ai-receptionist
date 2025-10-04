@@ -1,58 +1,39 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: freeswitch
+  name: freeswitch-server
   namespace: ai-receptionist
   labels:
-    app: freeswitch
-    component: telephony
+    app: freeswitch-server
+    component: telephony-core
 spec:
   replicas: 1
   strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: 1
+    type: Recreate  # FreeSWITCH needs exclusive port binding
   selector:
     matchLabels:
-      app: freeswitch
+      app: freeswitch-server
   template:
     metadata:
       labels:
-        app: freeswitch
-        component: telephony
+        app: freeswitch-server
+        component: telephony-core
     spec:
       containers:
       - name: freeswitch
-        image: 176.9.65.80:5000/ai-receptionist/freeswitch:latest
+        image: 176.9.65.80:5000/ai-receptionist/freeswitch-server:latest
         imagePullPolicy: Always
         ports:
         - name: sip-udp
           containerPort: 5060
           protocol: UDP
-        - name: api-http
-          containerPort: 8080
+        - name: event-socket
+          containerPort: 8021
           protocol: TCP
         - name: rtp-start
           containerPort: 16384
           protocol: UDP
         env:
-        - name: AI_ENGINE_URL
-          value: "http://ai-engine:8000"
-        - name: BACKEND_API_URL
-          value: "http://backend-api:3000/api/v1"
-        - name: FREESWITCH_LOG_LEVEL
-          value: "INFO"
-        - name: SIP_PORT
-          value: "5060"
-        - name: RTP_PORT_MIN
-          value: "16384"
-        - name: RTP_PORT_MAX
-          value: "32768"
-        - name: FREESWITCH_HOST
-          value: "0.0.0.0"
-        - name: FREESWITCH_PORT
-          value: "8080"
         - name: POD_IP
           valueFrom:
             fieldRef:
@@ -61,9 +42,6 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
-        envFrom:
-        - configMapRef:
-            name: freeswitch-config
         resources:
           requests:
             memory: "512Mi"
@@ -73,40 +51,36 @@ spec:
             cpu: "1000m"
         volumeMounts:
         - name: freeswitch-config
-          mountPath: /app/config
-          readOnly: true
+          mountPath: /etc/freeswitch
+          readOnly: false
         - name: freeswitch-logs
-          mountPath: /app/logs
+          mountPath: /var/log/freeswitch
         - name: freeswitch-data
-          mountPath: /app/data
+          mountPath: /var/lib/freeswitch
         livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
+          tcpSocket:
+            port: 8021
           initialDelaySeconds: 30
           periodSeconds: 30
           timeoutSeconds: 5
           failureThreshold: 3
         readinessProbe:
-          httpGet:
-            path: /ready
-            port: 8080
+          tcpSocket:
+            port: 8021
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 3
           failureThreshold: 3
         startupProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 30
+          tcpSocket:
+            port: 8021
+          initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 10
       volumes:
       - name: freeswitch-config
-        configMap:
-          name: freeswitch-config
+        emptyDir: {}  # Use default FreeSWITCH config for now
       - name: freeswitch-logs
         emptyDir: {}
       - name: freeswitch-data
@@ -114,7 +88,6 @@ spec:
           claimName: freeswitch-data-pvc
       restartPolicy: Always
       terminationGracePeriodSeconds: 60
-      serviceAccountName: freeswitch-service-account
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -124,89 +97,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  selector:
-    matchLabels:
-      app: freeswitch
   resources:
     requests:
       storage: 10Gi
   storageClassName: local-storage
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: freeswitch-service-account
-  namespace: ai-receptionist
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  namespace: ai-receptionist
-  name: freeswitch-role
-rules:
-- apiGroups: [""]
-  resources: ["pods", "services", "endpoints"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: [""]
-  resources: ["configmaps"]
-  verbs: ["get", "list", "watch"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: freeswitch-role-binding
-  namespace: ai-receptionist
-subjects:
-- kind: ServiceAccount
-  name: freeswitch-service-account
-  namespace: ai-receptionist
-roleRef:
-  kind: Role
-  name: freeswitch-role
-  apiGroup: rbac.authorization.k8s.io
----
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: freeswitch-hpa
-  namespace: ai-receptionist
-  labels:
-    app: freeswitch
-    component: telephony
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: freeswitch
-  minReplicas: 1
-  maxReplicas: 2
-  metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 70
-  - type: Resource
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageUtilization: 80
-  behavior:
-    scaleDown:
-      stabilizationWindowSeconds: 300
-      policies:
-      - type: Percent
-        value: 10
-        periodSeconds: 60
-    scaleUp:
-      stabilizationWindowSeconds: 0
-      policies:
-      - type: Percent
-        value: 100
-        periodSeconds: 15
-      - type: Pods
-        value: 1
-        periodSeconds: 15
-      selectPolicy: Max
