@@ -21,7 +21,7 @@ spec:
     spec:
       # Run as root to ensure proper permissions for mounted volumes
       securityContext:
-        fsGroup: 996  # freeswitch group
+        fsGroup: 999  # freeswitch group (UID 999)
         runAsUser: 0  # root (FreeSWITCH will drop to freeswitch user)
       initContainers:
       # Fix permissions on mounted volumes
@@ -32,10 +32,10 @@ spec:
         - -c
         - |
           echo "Fixing permissions for FreeSWITCH volumes..."
-          chown -R 996:996 /var/lib/freeswitch /var/log/freeswitch
+          chown -R 999:999 /var/lib/freeswitch /var/log/freeswitch
           chmod -R 755 /var/lib/freeswitch /var/log/freeswitch
           mkdir -p /var/lib/freeswitch/db
-          chown -R 996:996 /var/lib/freeswitch/db
+          chown -R 999:999 /var/lib/freeswitch/db
           chmod 755 /var/lib/freeswitch/db
           echo "Permissions fixed!"
           ls -la /var/lib/freeswitch/
