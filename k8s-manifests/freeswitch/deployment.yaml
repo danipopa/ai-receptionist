@@ -100,3 +100,6 @@ spec:
     requests:
       storage: 10Gi
   storageClassName: local-storage
+  selector:
+    matchLabels:
+      pv-name: freeswitch-data-pv

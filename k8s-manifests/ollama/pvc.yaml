@@ -13,6 +13,9 @@ spec:
     requests:
       storage: 50Gi  # LLM models are large (7B model ~4GB, 13B ~8GB, etc.)
   storageClassName: local-storage
+  selector:
+    matchLabels:
+      pv-name: ollama-models-pv
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -29,3 +32,6 @@ spec:
     requests:
       storage: 10Gi  # For logs, temp files, etc.
   storageClassName: local-storage
+  selector:
+    matchLabels:
+      pv-name: ollama-data-pv

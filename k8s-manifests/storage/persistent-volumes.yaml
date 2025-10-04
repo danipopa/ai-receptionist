@@ -5,6 +5,7 @@ metadata:
   labels:
     app: freeswitch-server
     component: telephony-core
+    pv-name: freeswitch-data-pv
 spec:
   capacity:
     storage: 10Gi
@@ -29,6 +30,7 @@ metadata:
   labels:
     app: ollama
     component: ai-engine
+    pv-name: ollama-models-pv
 spec:
   capacity:
     storage: 50Gi
@@ -53,6 +55,7 @@ metadata:
   labels:
     app: ollama
     component: ai-engine
+    pv-name: ollama-data-pv
 spec:
   capacity:
     storage: 10Gi
