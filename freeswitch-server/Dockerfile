@@ -66,6 +66,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy custom configuration to override vanilla defaults
 COPY config/ /etc/freeswitch/
 
+# Copy entrypoint script
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 # The freeswitch user/group is already created by the package
 # Ensure proper permissions and create database directory
 RUN chown -R freeswitch:freeswitch /etc/freeswitch /var/lib/freeswitch /var/log/freeswitch /usr/share/freeswitch && \
@@ -82,4 +86,5 @@ WORKDIR /var/lib/freeswitch
 EXPOSE 5060/udp 5080/udp 8021/tcp 16384-32768/udp
 
 # Set the command to run FreeSWITCH in the foreground
-CMD ["/usr/bin/freeswitch", "-u", "freeswitch", "-g", "freeswitch", "-nonat", "-c"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD []
