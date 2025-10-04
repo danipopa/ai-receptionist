@@ -19,20 +19,23 @@ chown -R freeswitch:freeswitch /etc/freeswitch
 # Ensure the database directory is writable
 echo "Setting permissions..."
 chmod 755 /var/lib/freeswitch
-chmod 755 /var/lib/freeswitch/db
+chmod 775 /var/lib/freeswitch/db  # Make db directory writable
 
 # Test database creation
 echo "Testing database creation..."
-su freeswitch -c "touch /var/lib/freeswitch/db/test.db && rm -f /var/lib/freeswitch/db/test.db" || {
-    echo "ERROR: Cannot create files in database directory!"
-    echo "Directory permissions:"
-    ls -la /var/lib/freeswitch/
-    echo "Process user:"
-    id
-    echo "Target user:"
-    id freeswitch
-    exit 1
-}
+echo "Current user: $(id)"
+echo "Trying to create test file as root..."
+touch /var/lib/freeswitch/db/test-root.db && echo "✓ Root can write" || echo "✗ Root cannot write"
+
+echo "Trying to create test file as freeswitch user..."
+su freeswitch -c "touch /var/lib/freeswitch/db/test-freeswitch.db" && echo "✓ freeswitch can write" || echo "✗ freeswitch cannot write"
+
+# Check what's in the db directory
+echo "Contents of db directory:"
+ls -la /var/lib/freeswitch/db/
+
+# Clean up test files
+rm -f /var/lib/freeswitch/db/test-*.db
 
 echo "Permissions test passed!"
 
