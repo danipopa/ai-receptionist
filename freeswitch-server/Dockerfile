@@ -28,6 +28,7 @@ RUN echo "deb [signed-by=/usr/share/keyrings/signalwire-freeswitch-repo.gpg] htt
 # Install FreeSWITCH and common modules
 RUN apt-get update && apt-get install -y --no-install-recommends \
     freeswitch \
+    freeswitch-conf-vanilla \
     freeswitch-mod-console \
     freeswitch-mod-logfile \
     freeswitch-mod-enum \
