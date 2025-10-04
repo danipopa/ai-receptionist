@@ -69,7 +69,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Just ensure proper permissions
 RUN chown -R freeswitch:freeswitch /etc/freeswitch /var/lib/freeswitch /var/log/freeswitch /usr/share/freeswitch
 
-USER freeswitch
+# Run as root in container (safe and needed for proper access)
+# USER freeswitch
 
 # Set the working directory
 WORKDIR /var/lib/freeswitch
@@ -78,4 +79,4 @@ WORKDIR /var/lib/freeswitch
 EXPOSE 5060/udp 5080/udp 8021/tcp 16384-32768/udp
 
 # Set the command to run FreeSWITCH in the foreground
-CMD ["/usr/bin/freeswitch", "-nonat", "-c"]
+CMD ["/usr/bin/freeswitch", "-u", "freeswitch", "-g", "freeswitch", "-nonat", "-c"]
