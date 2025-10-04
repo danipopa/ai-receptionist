@@ -63,12 +63,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     freeswitch-mod-say-en \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy your custom configuration into the image (if you have any)
-# COPY config/ /etc/freeswitch/
+# Copy custom configuration to override vanilla defaults
+COPY config/ /etc/freeswitch/
 
 # The freeswitch user/group is already created by the package
-# Just ensure proper permissions
-RUN chown -R freeswitch:freeswitch /etc/freeswitch /var/lib/freeswitch /var/log/freeswitch /usr/share/freeswitch
+# Ensure proper permissions and create database directory
+RUN chown -R freeswitch:freeswitch /etc/freeswitch /var/lib/freeswitch /var/log/freeswitch /usr/share/freeswitch && \
+    mkdir -p /var/lib/freeswitch/db && \
+    chown -R freeswitch:freeswitch /var/lib/freeswitch/db
 
 # Run as root in container (safe and needed for proper access)
 # USER freeswitch

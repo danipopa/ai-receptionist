@@ -1,0 +1,18 @@
+<configuration name="switch.conf" description="Core Configuration">
+  <settings>
+    <!-- Specify database location in writable directory -->
+    <param name="core-db-name" value="/var/lib/freeswitch/core.db" />
+    
+    <!-- Session limits -->
+    <param name="max-sessions" value="1000"/>
+    <param name="sessions-per-second" value="30"/>
+    
+    <!-- RTP Settings -->
+    <param name="rtp-start-port" value="16384"/>
+    <param name="rtp-end-port" value="32768"/>
+    
+    <!-- Use system time -->
+    <param name="auto-restart" value="false"/>
+    <param name="debug-level" value="7"/>
+  </settings>
+</configuration>
