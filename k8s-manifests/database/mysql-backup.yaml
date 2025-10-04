@@ -16,6 +16,23 @@ metadata:
     pv-name: ai-receptionist-mysql-pv
 spec:
   storageClassName: mysql-local
+  capacity:e.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: mysql-local
+provisioner: rancher.io/local-path            # or your cluster’s dynamic provisioner
+volumeBindingMode: WaitForFirstConsumer       # schedules pod first, then binds PV on that node
+reclaimPolicy: Delete                         # or Retain, your choice
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ai-receptionist-mysql-pv
+  labels:
+    type: local
+    app: mysql
+spec:
+  storageClassName: mysql-local
   capacity:
     storage: 50Gi
   accessModes:
@@ -83,6 +100,9 @@ spec:
       - name: mysql
         image: mysql:8.0
         imagePullPolicy: IfNotPresent
+        ports:
+        - name: mysql
+          containerPort: 3306
         env:
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:
@@ -98,45 +118,30 @@ spec:
             secretKeyRef:
               name: mysql-secrets
               key: user-password
-        ports:
-        - name: mysql
-          containerPort: 3306
+        # Optional: keep MySQL 8 auth behavior compatible
+        args: ["--default-authentication-plugin=mysql_native_password"]
         volumeMounts:
         - name: mysql-data
           mountPath: /var/lib/mysql
         - name: mysql-config
           mountPath: /etc/mysql/conf.d
+          readOnly: true
         - name: mysql-socket
           mountPath: /var/run/mysqld
         livenessProbe:
           exec:
-            command:
-            - mysqladmin
-            - ping
-            - -h
-            - localhost
-          initialDelaySeconds: 30
+            command: ["bash","-lc","mysqladmin ping -uroot -p\"$MYSQL_ROOT_PASSWORD\""]
+          initialDelaySeconds: 60
           periodSeconds: 30
           timeoutSeconds: 5
           failureThreshold: 3
         readinessProbe:
           exec:
-            command:
-            - mysql
-            - -h
-            - "127.0.0.1"
-            - -e
-            - "SELECT 1"
-          initialDelaySeconds: 5
-          periodSeconds: 2
-          timeoutSeconds: 1
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "250m"
-          limits:
-            memory: "2Gi"
-            cpu: "1000m"
+            command: ["bash","-lc","mysqladmin ping -uroot -p\"$MYSQL_ROOT_PASSWORD\""]
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
       volumes:
       - name: mysql-config
         configMap:
