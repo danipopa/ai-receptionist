@@ -50,9 +50,6 @@ spec:
             memory: "2Gi"
             cpu: "1000m"
         volumeMounts:
-        - name: freeswitch-config
-          mountPath: /etc/freeswitch
-          readOnly: false
         - name: freeswitch-logs
           mountPath: /var/log/freeswitch
         - name: freeswitch-data
@@ -79,8 +76,6 @@ spec:
           timeoutSeconds: 5
           failureThreshold: 10
       volumes:
-      - name: freeswitch-config
-        emptyDir: {}  # Use default FreeSWITCH config for now
       - name: freeswitch-logs
         emptyDir: {}
       - name: freeswitch-data
