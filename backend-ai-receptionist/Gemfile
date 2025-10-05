@@ -36,6 +36,9 @@ gem "ruby-openai", "~> 6.3" # For OpenAI-compatible APIs like Hugging Face and G
 gem "faraday", "~> 2.7" # For custom HTTP clients (Ollama, direct API calls)
 gem "faraday-multipart", "~> 1.0" # For file uploads
 
+# Website content parsing
+gem "nokogiri", "~> 1.15" # For HTML/XML parsing and content extraction
+
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
 gem "rack-cors"
 
