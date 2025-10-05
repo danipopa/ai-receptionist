@@ -219,13 +219,13 @@ Point your domain names to the external IPs:
 
 ```bash
 # SIP Domain (for SIP registration)
-# sip.your-domain.com -> SIP_EXTERNAL_IP
+# sip.mobiletel.eu -> SIP_EXTERNAL_IP
 
 # API Domain (for management interface)  
-# api.your-domain.com -> INGRESS_IP
+# api.mobiletel.eu -> INGRESS_IP
 
 # FreeSWITCH Management
-# freeswitch.your-domain.com -> INGRESS_IP
+# freeswitch.mobiletel.eu -> INGRESS_IP
 ```
 
 ### Configure SSL/TLS (Production)
@@ -276,10 +276,10 @@ kubectl exec -it deployment/backend-api -n ai-receptionist -- \
 ### Test API Endpoints
 ```bash
 # Test backend API health
-curl https://api.your-domain.com/api/v1/customers
+curl https://api.mobiletel.eu/api/v1/customers
 
 # Test AI Engine health
-curl https://api.your-domain.com/ai/health
+curl https://api.mobiletel.eu/ai/health
 ```
 
 ### Test FreeSWITCH

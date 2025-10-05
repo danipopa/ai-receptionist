@@ -186,8 +186,8 @@ get_endpoints() {
     INGRESS_IP=$(kubectl get ingress ai-receptionist-ingress -n $NAMESPACE -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
     
     if [ -n "$INGRESS_IP" ]; then
-        log_success "API endpoint: https://api.ai-receptionist.your-domain.com (IP: $INGRESS_IP)"
-        log_success "FreeSWITCH management: https://freeswitch.ai-receptionist.your-domain.com (IP: $INGRESS_IP)"
+        log_success "API endpoint: https://api.ai-receptionist.mobiletel.eu (IP: $INGRESS_IP)"
+        log_success "FreeSWITCH management: https://freeswitch.ai-receptionist.mobiletel.eu (IP: $INGRESS_IP)"
     else
         log_warning "Ingress IP not yet assigned"
     fi

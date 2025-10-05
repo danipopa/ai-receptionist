@@ -31,8 +31,10 @@ spec:
           containerPort: 3000
           protocol: TCP
         env:
-        - name: BACKEND_API_URL
-          value: "http://backend-api:3000/api/v1"
+        - name: API_BASE_URL
+          value: "https://api.frontmind.mobiletel.eu/api/v1"
+        - name: BACKEND_API_URL  # Legacy - keeping for compatibility
+          value: "https://api.frontmind.mobiletel.eu/api/v1"
         - name: NUXT_HOST
           value: "0.0.0.0"
         - name: HOST

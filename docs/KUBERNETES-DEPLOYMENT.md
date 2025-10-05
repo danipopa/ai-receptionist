@@ -79,8 +79,8 @@ Point your domains to the ingress IP addresses:
 ./deploy-k8s.sh endpoints
 
 # Update DNS records:
-# api.ai-receptionist.your-domain.com -> INGRESS_IP
-# freeswitch.ai-receptionist.your-domain.com -> INGRESS_IP
+# api.ai-receptionist.mobiletel.eu -> INGRESS_IP
+# freeswitch.ai-receptionist.mobiletel.eu -> INGRESS_IP
 ```
 
 ## Detailed Configuration

@@ -14,11 +14,11 @@ metadata:
 spec:
   tls:
   - hosts:
-    - api.ai-receptionist.your-domain.com
-    - freeswitch.ai-receptionist.your-domain.com
+    - api.ai-receptionist.mobiletel.eu
+    - freeswitch.ai-receptionist.mobiletel.eu
     secretName: ai-receptionist-tls
   rules:
-  - host: api.ai-receptionist.your-domain.com
+  - host: api.ai-receptionist.mobiletel.eu
     http:
       paths:
       - path: /
@@ -28,7 +28,7 @@ spec:
             name: backend-api
             port:
               number: 3000
-  - host: freeswitch.ai-receptionist.your-domain.com
+  - host: freeswitch.ai-receptionist.mobiletel.eu
     http:
       paths:
       - path: /

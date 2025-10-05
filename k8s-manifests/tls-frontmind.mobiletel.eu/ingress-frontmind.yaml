@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: frontmind
-  namespace: ai-receptionist          # <— change if different
+  namespace: ai-receptionist
   annotations:
     kubernetes.io/ingress.class: nginx
     cert-manager.io/cluster-issuer: letsencrypt-prod
@@ -11,7 +11,7 @@ spec:
   tls:
     - hosts:
         - frontmind.mobiletel.eu
-      secretName: frontmind-tls       # cert-manager will create this secret
+      secretName: frontmind-tls  # cert-manager automatically creates this secret
   rules:
     - host: frontmind.mobiletel.eu
       http:
@@ -20,6 +20,17 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: frontend   # <— your Service name
+                name: frontend  # Frontend service name
                 port:
-                  number: 80          # <— your Service port
+                  number: 80    # Frontend service port
+
+---
+# Network Policy Update Required:
+# For ACME HTTP-01 challenges to work, the nginx ingress controller 
+# must be able to reach ACME solver pods. Ensure the default namespace
+# (where nginx ingress controller runs) has the required label:
+#
+# kubectl label namespace default name=ingress-nginx
+#
+# This allows the ai-receptionist-network-policy to permit traffic
+# from the ingress controller during certificate validation.

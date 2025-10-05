@@ -1,13 +1,21 @@
-# Request the cert explicitly
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: frontmind-cert
-  namespace: ai-receptionist
-spec:
-  secretName: frontmind-tls
-  issuerRef:
-    kind: ClusterIssuer
-    name: letsencrypt-prod
-  dnsNames:
-    - frontmind.mobiletel.eu
+# NOTE: Manual Certificate creation is not needed!
+# The ingress with cert-manager.io/cluster-issuer annotation
+# automatically creates and manages the certificate.
+#
+# If you need to manually create a certificate, use this configuration:
+#
+# apiVersion: cert-manager.io/v1
+# kind: Certificate
+# metadata:
+#   name: frontmind-cert
+#   namespace: ai-receptionist
+# spec:
+#   secretName: frontmind-tls
+#   issuerRef:
+#     kind: ClusterIssuer
+#     name: letsencrypt-prod
+#   dnsNames:
+#     - frontmind.mobiletel.eu
+#
+# However, this can cause conflicts with ingress-managed certificates.
+# The recommended approach is to let the ingress handle certificate creation.
