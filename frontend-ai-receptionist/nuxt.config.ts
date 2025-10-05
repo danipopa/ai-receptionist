@@ -23,7 +23,8 @@ export default defineNuxtConfig({
     public: {
       apiBase: process.env.API_BASE_URL || 'http://localhost:3000/api/v1',
       apiHost: process.env.API_HOST || 'localhost',
-      apiPort: process.env.API_PORT || '3000'
+      apiPort: process.env.API_PORT || '3000',
+      apiKey: process.env.API_KEY || ''
     }
   },
 

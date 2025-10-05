@@ -214,7 +214,8 @@ const fetchCustomers = async () => {
     const response = await $fetch(`${config.public.apiBase}/customers`, {
       method: 'GET',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${config.public.apiKey}`
       }
     })
     
@@ -235,7 +236,8 @@ const createCustomer = async () => {
     const response = await $fetch(`${config.public.apiBase}/customers`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${config.public.apiKey}`
       },
       body: { 
         customer: newCustomer.value 
