@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontmind
+  namespace: ai-receptionist          # <— change if different
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - frontmind.mobiletel.eu
+      secretName: frontmind-tls       # cert-manager will create this secret
+  rules:
+    - host: frontmind.mobiletel.eu
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend   # <— your Service name
+                port:
+                  number: 80          # <— your Service port
