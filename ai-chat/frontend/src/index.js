@@ -8,7 +8,7 @@ import './styles/global.css';
 function initChatWidget(config = {}) {
   const defaultConfig = {
     // Backend API Configuration
-    apiBaseUrl: 'http://localhost:3000/api/v1',
+    apiBaseUrl: 'https://api.frontmind.mobiletel.eu/api/v1',
     apiKey: '', // Your Rails backend API key
     phoneNumberId: null, // Should be provided by the website
     
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const scriptTag = document.querySelector('script[data-ai-chat-widget]');
   if (scriptTag) {
     const config = {
-      apiBaseUrl: scriptTag.getAttribute('data-api-url') || 'http://localhost:3000/api/v1',
+      apiBaseUrl: scriptTag.getAttribute('data-api-url') || 'https://api.frontmind.mobiletel.eu/api/v1',
       phoneNumberId: scriptTag.getAttribute('data-phone-number-id'),
       theme: scriptTag.getAttribute('data-theme') || 'blue',
       welcomeMessage: scriptTag.getAttribute('data-welcome-message'),
