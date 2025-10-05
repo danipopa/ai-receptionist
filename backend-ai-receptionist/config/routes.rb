@@ -48,6 +48,9 @@ Rails.application.routes.draw do
       get 'analytics', to: 'analytics#index'
       get 'analytics/calls', to: 'analytics#calls'
       get 'analytics/customers', to: 'analytics#customers'
+      
+      # AI Chat endpoint
+      post 'ai/chat', to: 'ai#chat'
     end
 
     # Event handling for external services

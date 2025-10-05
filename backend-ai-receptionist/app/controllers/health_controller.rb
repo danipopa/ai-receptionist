@@ -1,4 +1,6 @@
 class HealthController < ApplicationController
+  skip_before_action :authenticate_api_key
+  
   # Basic health check for Kubernetes liveness probe
   def health
     begin

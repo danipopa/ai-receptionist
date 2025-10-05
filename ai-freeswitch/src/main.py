@@ -31,8 +31,10 @@ class FreeSwitchIntegration:
         self.ai_engine_url = config.get("ai_engine_url", "http://localhost:8081")
         self.backend_url = config.get("backend_url", "http://localhost:3000")
         # Network configuration from environment variables
-        self.server_host = os.getenv("FREESWITCH_HOST", "0.0.0.0")
-        self.server_port = int(os.getenv("FREESWITCH_PORT", "8080"))
+        self.freeswitch_host = os.getenv("FREESWITCH_HOST", "localhost")
+        self.freeswitch_port = int(os.getenv("FREESWITCH_PORT", "8021"))
+        self.server_host = os.getenv("SERVER_HOST", "0.0.0.0")
+        self.server_port = int(os.getenv("SERVER_PORT", "8080"))
         
     async def start_server(self):
         """Start the WebSocket server and HTTP health server"""

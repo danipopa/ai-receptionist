@@ -31,6 +31,11 @@ gem "thruster", require: false
 # HTTP client for external API calls
 gem "httparty"
 
+# AI Provider gems
+gem "ruby-openai", "~> 6.3" # For OpenAI-compatible APIs like Hugging Face and Gemini
+gem "faraday", "~> 2.7" # For custom HTTP clients (Ollama, direct API calls)
+gem "faraday-multipart", "~> 1.0" # For file uploads
+
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
 gem "rack-cors"
 

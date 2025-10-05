@@ -37,10 +37,12 @@ spec:
           value: "8021"
         - name: FREESWITCH_PASSWORD
           value: "ClueCon"  # Default FreeSWITCH ESL password
+        - name: SERVER_PORT
+          value: "8080"
         - name: AI_ENGINE_URL
           value: "http://ai-engine:8000"
         - name: BACKEND_API_URL
-          value: "http://backend-ai-receptionist:3000/api/v1"
+          value: "http://backend-api:3000"
         - name: LOG_LEVEL
           value: "INFO"
         - name: POD_NAME
