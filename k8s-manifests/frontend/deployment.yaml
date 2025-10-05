@@ -87,6 +87,7 @@ metadata:
     component: ui
   annotations:
     metallb.universe.tf/allow-shared-ip: "ai-receptionist-shared"
+    metallb.universe.tf/ip-allocated-from-pool: "first-pool"
 spec:
   type: LoadBalancer
   loadBalancerIP: 88.198.85.74
