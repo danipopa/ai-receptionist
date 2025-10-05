@@ -45,9 +45,9 @@
         
         <div class="code-block">
 &lt;script 
-  src="http://localhost:8080/ai-chat-widget.js"
+  src="${WIDGET_CDN_URL}"
   data-ai-chat-widget
-  data-api-url="https://api.frontmind.mobiletel.eu/api/v1"
+  data-api-url="${API_BASE_URL}"
   data-phone-number-id="<span class="highlight">YOUR_PHONE_NUMBER_ID</span>"
   data-theme="blue"
   data-welcome-message="Hi! How can I help you today?"
@@ -59,11 +59,11 @@
         <p>For more control over the widget configuration:</p>
         
         <div class="code-block">
-&lt;script src="http://localhost:8080/ai-chat-widget.js"&gt;&lt;/script&gt;
+&lt;script src="${WIDGET_CDN_URL}"&gt;&lt;/script&gt;
 &lt;script&gt;
   document.addEventListener('DOMContentLoaded', function() {
     window.AIChatWidget.init({
-      apiBaseUrl: 'https://api.frontmind.mobiletel.eu/api/v1',
+      apiBaseUrl: '${API_BASE_URL}',
       phoneNumberId: '<span class="highlight">YOUR_PHONE_NUMBER_ID</span>',
       theme: 'blue', // 'blue', 'green', or 'purple'
       position: 'bottom-right', // 'bottom-right', 'bottom-left', 'top-right', 'top-left'
@@ -86,7 +86,7 @@
             <tr>
                 <td style="border: 1px solid #dee2e6; padding: 12px;"><code>apiBaseUrl</code></td>
                 <td style="border: 1px solid #dee2e6; padding: 12px;">Your Rails API base URL</td>
-                <td style="border: 1px solid #dee2e6; padding: 12px;">http://localhost:3000/api/v1</td>
+                <td style="border: 1px solid #dee2e6; padding: 12px;">${API_BASE_URL}</td>
             </tr>
             <tr>
                 <td style="border: 1px solid #dee2e6; padding: 12px;"><code>phoneNumberId</code></td>
@@ -118,22 +118,22 @@
         <h3>Getting Your Phone Number ID</h3>
         <p>To get your phone number ID from the Rails API:</p>
         <div class="code-block">
-curl http://localhost:3000/api/v1/phone_numbers
+curl ${API_BASE_URL}/phone_numbers
         </div>
 
         <h3>Test the Widget</h3>
         <p>The chat widget should appear in the bottom-right corner of this page! Try clicking it and asking questions.</p>
         
         <div style="background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 4px; margin: 20px 0;">
-            <strong>Note:</strong> Make sure your Rails backend is running on <code>localhost:3000</code> and the chat widget dev server is running on <code>localhost:8080</code>.
+            <strong>Note:</strong> Make sure your Rails backend is accessible via your configured <code>API_BASE_URL</code> and the chat widget is served from your configured <code>WIDGET_CDN_URL</code>.
         </div>
     </div>
 
     <!-- Example: Chat widget embedded with simple script tag -->
     <script 
-      src="http://localhost:8080/ai-chat-widget.js"
+      src="${WIDGET_CDN_URL}"
       data-ai-chat-widget
-      data-api-url="http://localhost:3000/api/v1"
+      data-api-url="${API_BASE_URL}"
       data-phone-number-id="1"
       data-theme="blue"
       data-welcome-message="Hi! Welcome to our demo. How can I help you today?"

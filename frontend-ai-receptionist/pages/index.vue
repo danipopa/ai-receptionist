@@ -139,7 +139,10 @@ const checkSystemStatus = async () => {
   
   // Check AI Engine
   try {
-    const response = await fetch('http://localhost:8001/health')
+    const { $config } = useNuxtApp()
+    // Use the same domain as API but different service path
+    const aiEngineUrl = `${$config.public.apiBase.replace('/api/v1', '')}/ai-engine/health`
+    const response = await fetch(aiEngineUrl)
     if (response.ok) {
       aiEngineStatus.value = { text: 'Online', class: statusClasses.online }
     } else {
@@ -152,7 +155,10 @@ const checkSystemStatus = async () => {
   
   // Check FreeSWITCH
   try {
-    const response = await fetch('http://localhost:8080/health')
+    const { $config } = useNuxtApp()
+    // Use the same domain as API but different service path
+    const freeswitchUrl = `${$config.public.apiBase.replace('/api/v1', '')}/freeswitch/health`
+    const response = await fetch(freeswitchUrl)
     if (response.ok) {
       freeswitchStatus.value = { text: 'Online', class: statusClasses.online }
     } else {

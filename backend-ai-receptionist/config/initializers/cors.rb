@@ -8,7 +8,9 @@
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
     # Allow requests from Nuxt frontend (development and production)
-    origins "http://localhost:3000", "http://localhost:3001", "https://your-frontend-domain.com"
+    origins "http://localhost:3000", "http://localhost:3001", 
+            "https://frontmind.mobiletel.eu", 
+            "https://api.frontmind.mobiletel.eu"
 
     resource "*",
       headers: :any,
@@ -18,7 +20,8 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
 
   # Allow AI services to communicate with backend
   allow do
-    origins "http://localhost:8080", "http://localhost:8081"
+    origins "http://localhost:8080", "http://localhost:8081",
+            "http://ai-engine-service:8081", "http://freeswitch-integration-service:8080"
 
     resource "/api/*",
       headers: :any,
