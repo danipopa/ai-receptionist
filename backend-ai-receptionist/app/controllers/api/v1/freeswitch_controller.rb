@@ -1,10 +1,26 @@
 class Api::V1::FreeswitchController < ApplicationController
-  skip_before_action :authenticate_api_key, only: [:directory]
+  skip_before_action :authenticate_api_key, only: [:directory, :dialplan, :configuration]
   
   # FreeSWITCH XML Directory Lookup
   # POST /api/v1/freeswitch/directory
   def directory
     xml_response = FreeswitchDirectoryService.handle_directory_request(params)
+    
+    render xml: xml_response, content_type: 'application/xml'
+  end
+  
+  # FreeSWITCH XML Dialplan Lookup
+  # POST /api/v1/freeswitch/dialplan
+  def dialplan
+    xml_response = FreeswitchDirectoryService.handle_dialplan_request(params)
+    
+    render xml: xml_response, content_type: 'application/xml'
+  end
+  
+  # FreeSWITCH XML Configuration Lookup
+  # POST /api/v1/freeswitch/configuration
+  def configuration
+    xml_response = FreeswitchDirectoryService.handle_configuration_request(params)
     
     render xml: xml_response, content_type: 'application/xml'
   end

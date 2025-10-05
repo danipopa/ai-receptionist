@@ -34,6 +34,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_05_150027) do
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "sip_username"
+    t.string "sip_password"
+    t.string "sip_domain", default: "ai-receptionist.local"
+    t.boolean "sip_enabled", default: true
+    t.integer "max_concurrent_calls", default: 5
+    t.index ["sip_username", "sip_domain"], name: "index_customers_on_sip_username_and_sip_domain", unique: true
+    t.index ["sip_username"], name: "index_customers_on_sip_username", unique: true
   end
 
   create_table "faqs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|

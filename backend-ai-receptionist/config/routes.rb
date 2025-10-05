@@ -18,6 +18,33 @@ Rails.application.routes.draw do
       # Customers and their phone numbers
       resources :customers do
         resources :phone_numbers, except: [:index]
+        
+        # Customer-specific endpoints for frontend
+        member do
+          get 'numbers', to: 'customers#phone_numbers'
+          post 'numbers', to: 'customers#create_phone_number'
+          get 'website', to: 'customers#website_settings'
+          put 'website', to: 'customers#update_website_settings'
+          get 'faq', to: 'customers#faq_settings'
+          put 'faq', to: 'customers#update_faq_settings'
+          
+          # SIP trunk configuration endpoints
+          get 'sip_configuration', to: 'customers#sip_configuration'
+          patch 'sip_configuration', to: 'customers#update_sip_configuration'
+          get 'freeswitch_config', to: 'customers#freeswitch_config'
+          
+          # Phone number SIP trunk management
+          post 'phone_numbers/:phone_number_id/configure_sip_trunk', to: 'customers#configure_sip_trunk'
+          post 'phone_numbers/:phone_number_id/test_sip_trunk', to: 'customers#test_sip_trunk'
+        end
+        
+        # Nested phone number management
+        resources :phone_numbers, path: 'numbers', except: [:index] do
+          member do
+            put '', to: 'phone_numbers#update'
+            delete '', to: 'phone_numbers#destroy'
+          end
+        end
       end
 
       # Phone numbers (can also be accessed directly)
@@ -55,6 +82,8 @@ Rails.application.routes.draw do
       # FreeSWITCH integration
       namespace :freeswitch do
         post 'directory', to: 'freeswitch#directory'
+        post 'dialplan', to: 'freeswitch#dialplan'
+        post 'configuration', to: 'freeswitch#configuration'
         
         resources :customers, only: [] do
           member do

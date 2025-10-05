@@ -95,7 +95,7 @@ namespace :website do
     
     if faqs.empty?
       puts "No FAQs need website scanning"
-      return
+      next
     end
     
     puts "FAQs that need website scanning:"

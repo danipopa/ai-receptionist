@@ -17,37 +17,90 @@ class Api::V1::PhoneNumbersController < ApplicationController
     @phone_number = @customer.phone_numbers.build(phone_number_params)
     
     if @phone_number.save
-      render json: { data: phone_number_json(@phone_number) }, status: :created
+      render json: { 
+        data: phone_number_json(@phone_number),
+        message: 'Phone number created successfully'
+      }, status: :created
     else
-      render json: { errors: @phone_number.errors }, status: :unprocessable_entity
+      render json: { 
+        errors: @phone_number.errors.full_messages,
+        message: 'Failed to create phone number'
+      }, status: :unprocessable_entity
     end
   end
   
   def update
     if @phone_number.update(phone_number_params)
-      render json: { data: phone_number_json(@phone_number) }
+      render json: { 
+        data: phone_number_json(@phone_number),
+        message: 'Phone number updated successfully'
+      }
     else
-      render json: { errors: @phone_number.errors }, status: :unprocessable_entity
+      render json: { 
+        errors: @phone_number.errors.full_messages,
+        message: 'Failed to update phone number'
+      }, status: :unprocessable_entity
     end
   end
   
   def destroy
-    @phone_number.update(active: false)
-    head :no_content
+    if @phone_number.destroy
+      render json: { message: 'Phone number deleted successfully' }
+    else
+      render json: { 
+        errors: ['Failed to delete phone number'],
+        message: 'Deletion failed'
+      }, status: :unprocessable_entity
+    end
   end
   
   private
   
   def set_phone_number
     @phone_number = PhoneNumber.find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    render json: { message: 'Phone number not found' }, status: :not_found
   end
   
   def set_customer
     @customer = Customer.find(params[:customer_id]) if params[:customer_id]
+  rescue ActiveRecord::RecordNotFound
+    render json: { message: 'Customer not found' }, status: :not_found
   end
   
   def phone_number_params
-    params.require(:phone_number).permit(:number, :label, :description, :active, settings: {})
+    # Handle different parameter structures from frontend
+    if params[:number].present?
+      # Frontend sends: { "number": { "phone_number": "+1234", "description": "...", "active": true } }
+      # OR the entire phone number object including readonly fields
+      number_params = params.require(:number)
+      
+      # Extract only the updatable fields, ignore readonly fields like id, created_at, etc.
+      extracted_params = {}
+      
+      # Map phone_number field to number
+      if number_params[:phone_number].present?
+        extracted_params[:number] = number_params[:phone_number]
+      elsif number_params[:number].present?
+        extracted_params[:number] = number_params[:number]
+      end
+      
+      # Map other fields
+      extracted_params[:display_name] = number_params[:display_name] if number_params[:display_name].present?
+      extracted_params[:description] = number_params[:description] if number_params[:description].present?
+      
+      # Handle is_primary/active mapping
+      if number_params[:is_primary].present?
+        extracted_params[:is_primary] = number_params[:is_primary]
+      elsif number_params[:active].present?
+        extracted_params[:is_primary] = number_params[:active]
+      end
+      
+      extracted_params
+    else
+      # Standard structure: { "phone_number": { "number": "+1234", "display_name": "...", "is_primary": false } }
+      params.require(:phone_number).permit(:number, :display_name, :description, :is_primary)
+    end
   end
   
   def phone_number_json(phone_number, include_details: false)
@@ -79,7 +132,12 @@ class Api::V1::PhoneNumbersController < ApplicationController
       content: faq.content,
       pdf_url: faq.pdf_url,
       website_url: faq.website_url,
-      display_content: faq.display_content
+      website_scan_status: faq.website_scan_status,
+      website_scanned_at: faq.website_scanned_at,
+      needs_scan: faq.needs_website_scan?,
+      display_content: faq.display_content,
+      created_at: faq.created_at,
+      updated_at: faq.updated_at
     }
   end
   
