@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: backend-api
-        image: 176.9.65.80:5000/ai-receptionist/backend:latest
+        image: 176.9.65.80:5000/ai-receptionist/backend-ai-receptionist:latest
         imagePullPolicy: Always
         ports:
         - name: http
@@ -53,6 +53,10 @@ spec:
               key: secret-key-base
         - name: AI_ENGINE_URL
           value: "http://ai-engine:8000"
+        - name: API_KEY
+          value: "frontend-production-key-2024"
+        - name: PRIMARY_API_KEY
+          value: "frontend-production-key-2024"
         resources:
           requests:
             memory: "512Mi"
@@ -88,7 +92,7 @@ spec:
       terminationGracePeriodSeconds: 30
       initContainers:
       - name: db-migrate
-        image: 176.9.65.80:5000/ai-receptionist/backend:latest
+        image: 176.9.65.80:5000/ai-receptionist/backend-ai-receptionist:latest
         imagePullPolicy: Always
         command: ['bundle', 'exec', 'rails', 'db:migrate']
         env:
