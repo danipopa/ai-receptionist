@@ -17,4 +17,23 @@ class PhoneNumber < ApplicationRecord
       number
     end
   end
+  
+  # Scan all website URLs in FAQs and update content
+  def scan_website_content!
+    scanner = WebsiteScannerService.new
+    results = scanner.scan_faqs_for_phone_number(self)
+    
+    Rails.logger.info "Website scanning completed for phone number #{id}: #{results}"
+    results
+  end
+  
+  # Get FAQs that need website content scanning
+  def faqs_needing_scan
+    faqs.needs_scanning
+  end
+  
+  # Check if any FAQs have website URLs that haven't been scanned recently
+  def has_unscanned_websites?
+    faqs_needing_scan.exists?
+  end
 end

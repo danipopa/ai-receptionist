@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_22_055150) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_05_150027) do
   create_table "call_transcripts", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "phone_number_id", null: false
     t.string "caller_id"
@@ -44,6 +44,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_22_055150) do
     t.string "website_url"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "website_scanned_at"
+    t.string "website_scan_status"
+    t.string "website_content_hash"
     t.index ["phone_number_id"], name: "index_faqs_on_phone_number_id"
   end
 

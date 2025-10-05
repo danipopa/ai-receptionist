@@ -51,6 +51,19 @@ Rails.application.routes.draw do
       
       # AI Chat endpoint
       post 'ai/chat', to: 'ai#chat'
+      
+      # FreeSWITCH integration
+      namespace :freeswitch do
+        post 'directory', to: 'freeswitch#directory'
+        
+        resources :customers, only: [] do
+          member do
+            get 'sip_credentials', to: 'freeswitch#sip_credentials'
+            patch 'sip_credentials', to: 'freeswitch#update_sip_credentials'
+            post 'regenerate_sip_password', to: 'freeswitch#regenerate_sip_password'
+          end
+        end
+      end
     end
 
     # Event handling for external services

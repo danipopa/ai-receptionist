@@ -98,11 +98,14 @@ class AiProviders::BaseProvider
 
     # Add FAQ context if available
     if phone_number
+      # Trigger website scanning for FAQs that need it (async in background)
+      scan_faqs_if_needed(phone_number)
+      
       faqs = phone_number.faqs.limit(10)
       if faqs.any?
         prompt += "\n\nFrequently Asked Questions and Answers:\n"
         faqs.each do |faq|
-          prompt += "Q: #{faq.question}\nA: #{faq.answer}\n\n"
+          prompt += "Q: #{faq.title}\nA: #{faq.content}\n\n"
         end
         prompt += "Use this FAQ information to answer customer questions when relevant. "
       end
@@ -151,5 +154,19 @@ class AiProviders::BaseProvider
 
   def log_info(message)
     Rails.logger.info "#{self.class.name}: #{message}"
+  end
+  
+  # Trigger website scanning for FAQs if needed (runs in background)
+  def scan_faqs_if_needed(phone_number)
+    return unless phone_number&.has_unscanned_websites?
+    
+    # Run website scanning in background to avoid blocking the AI response
+    Thread.new do
+      begin
+        phone_number.scan_website_content!
+      rescue => e
+        Rails.logger.error "Background website scanning failed for phone number #{phone_number.id}: #{e.message}"
+      end
+    end
   end
 end

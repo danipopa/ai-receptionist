@@ -25,10 +25,17 @@ data:
             <param name="manage-presence" value="false"/>
             <param name="inbound-codec-negotiation" value="generous"/>
             <param name="nonce-ttl" value="60"/>
-            <param name="auth-calls" value="false"/>
-            <param name="inbound-late-negotiation" value="true"/>
-            <param name="accept-blind-reg" value="true"/>
-            <param name="accept-blind-auth" value="true"/>
+            <param name="auth-calls" value="true"/>
+            <param name="accept-blind-reg" value="false"/>
+            <param name="accept-blind-auth" value="false"/>
+            <param name="auth-all-packets" value="false"/>
+            <param name="ext-rtp-ip" value="auto-nat"/>
+            <param name="ext-sip-ip" value="auto-nat"/>
+            <param name="rtp-ip" value="auto"/>
+            <param name="sip-ip" value="auto"/>
+            <!-- Directory lookup via HTTP -->
+            <param name="xml-user-directory" value="true"/>
+            <param name="xml-user-directory-cache" value="false"/>
           </settings>
         </profile>
       </profiles>
@@ -110,6 +117,19 @@ data:
     <load module="mod_dialplan_asterisk"/>
     <load module="mod_spandsp"/>
     <load module="mod_g723_1"/>
+    <load module="mod_xml_curl"/>
+  xml_curl.conf.xml: |
+    <!-- xml_curl.conf.xml -->
+    <configuration name="xml_curl.conf" description="xml_curl Configuration">
+      <bindings>
+        <binding name="directory">
+          <param name="gateway-url" value="http://backend-api:3000/api/v1/freeswitch/directory" bindings="directory"/>
+          <param name="gateway-credentials" value="user:pass"/>
+          <param name="disable-100-continue" value="true"/>
+          <param name="method" value="POST"/>
+        </binding>
+      </bindings>
+    </configuration>
     <load module="mod_g729"/>
     <load module="mod_amr"/>
     <load module="mod_speex"/>

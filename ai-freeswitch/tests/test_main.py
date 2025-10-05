@@ -8,8 +8,8 @@ from datetime import datetime
 @pytest.fixture
 def config():
     return {
-        "ai_engine_url": "http://localhost:8081",
-        "backend_url": "http://localhost:3000"
+        "ai_engine_url": "http://ai-engine-service:8081",
+        "backend_url": "http://backend-api-service:3000"
     }
 
 @pytest.fixture

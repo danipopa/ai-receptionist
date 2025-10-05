@@ -346,6 +346,7 @@ DEPENDENCIES
   httparty
   kamal
   mysql2 (~> 0.5)
+  nokogiri (~> 1.15)
   puma (>= 5.0)
   rack-cors
   rails (~> 8.0.2, >= 8.0.2.1)
