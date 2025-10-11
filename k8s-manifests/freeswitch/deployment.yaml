@@ -126,9 +126,9 @@ spec:
       - name: freeswitch-data
         persistentVolumeClaim:
           claimName: freeswitch-data-pvc
-        - name: freeswitch-config
-          configMap:
-            name: freeswitch-config
+      - name: freeswitch-config
+        configMap:
+          name: freeswitch-config
       restartPolicy: Always
       terminationGracePeriodSeconds: 60
 ---
