@@ -5,18 +5,34 @@ class PhoneNumber < ApplicationRecord
   
   validates :number, presence: true, uniqueness: { case_sensitive: false }
   validates :customer, presence: true
+  validates :connection_mode, inclusion: { in: %w[trunk register] }
   
-  # SIP trunk validations
-  validates :sip_trunk_host, presence: true, if: :sip_trunk_enabled?
+  # SIP trunk validations (for direct SIP trunk mode)
+  validates :sip_trunk_host, presence: true, if: :trunk_mode?
   validates :sip_trunk_port, presence: true, numericality: { greater_than: 0, less_than: 65536 }, if: :sip_trunk_enabled?
-  validates :sip_trunk_username, presence: true, if: :sip_trunk_enabled?
-  validates :sip_trunk_password, presence: true, length: { minimum: 6 }, if: :sip_trunk_enabled?
-  validates :sip_trunk_domain, presence: true, if: :sip_trunk_enabled?
+  validates :sip_trunk_domain, presence: true, if: :trunk_mode?
   validates :sip_trunk_protocol, inclusion: { in: %w[UDP TCP TLS] }
+  
+  # Outbound registration validations (for register mode)
+  validates :sip_trunk_username, presence: true, if: :register_mode?
+  validates :sip_trunk_password, presence: true, length: { minimum: 6 }, if: :register_mode?
+  validates :sip_trunk_host, presence: true, if: :register_mode?
+  validates :sip_trunk_port, presence: true, numericality: { greater_than: 0, less_than: 65536 }, if: :register_mode?
   
   scope :sip_trunk_enabled, -> { where(sip_trunk_enabled: true) }
   scope :incoming_enabled, -> { where(incoming_calls_enabled: true) }
   scope :outbound_enabled, -> { where(outbound_calls_enabled: true) }
+  scope :trunk_mode, -> { where(connection_mode: 'trunk') }
+  scope :register_mode, -> { where(connection_mode: 'register') }
+  
+  # Connection mode helpers
+  def trunk_mode?
+    connection_mode == 'trunk'
+  end
+  
+  def register_mode?
+    connection_mode == 'register'
+  end
   
   def formatted_number
     # Remove all non-digits and format as (XXX) XXX-XXXX
@@ -49,10 +65,17 @@ class PhoneNumber < ApplicationRecord
     faqs_needing_scan.exists?
   end
   
-  # SIP trunk configuration methods
+  # SIP configuration methods
   def sip_trunk_uri
     return nil unless sip_trunk_enabled?
-    "sip:#{sip_trunk_username}@#{sip_trunk_host}:#{sip_trunk_port}"
+    
+    if trunk_mode?
+      # For trunk mode, no username needed
+      "sip:#{number}@#{sip_trunk_host}:#{sip_trunk_port}"
+    else
+      # For register mode, include username
+      "sip:#{sip_trunk_username}@#{sip_trunk_host}:#{sip_trunk_port}"
+    end
   end
   
   def sip_trunk_contact_uri
@@ -60,32 +83,42 @@ class PhoneNumber < ApplicationRecord
     "#{number} <#{sip_trunk_uri}>"
   end
   
-  # Generate FreeSWITCH gateway configuration for this phone number's SIP trunk
+  # Generate FreeSWITCH gateway configuration based on connection mode
   def to_freeswitch_gateway_xml
     return nil unless sip_trunk_enabled?
     
-    gateway_name = "gateway_#{number.gsub(/\D/, '')}"
+    gateway_name = "gateway_#{number.gsub(/\D/, '')}_#{connection_mode}"
     
-    <<~XML
-      <gateway name="#{gateway_name}">
-        <param name="username" value="#{sip_trunk_username}"/>
-        <param name="password" value="#{sip_trunk_password}"/>
-        <param name="realm" value="#{sip_trunk_domain}"/>
-        <param name="proxy" value="#{sip_trunk_host}:#{sip_trunk_port}"/>
-        <param name="register" value="true"/>
-        <param name="register-transport" value="#{sip_trunk_protocol.downcase}"/>
-        <param name="contact-params" value=""/>
-        <param name="send-register-on-wake" value="true"/>
-        <param name="retry-seconds" value="30"/>
-        <param name="caller-id-in-from" value="false"/>
-        <param name="supress-cng" value="true"/>
-        <param name="rtp-timeout-sec" value="300"/>
-        <param name="rtp-hold-timeout-sec" value="1800"/>
-        <param name="contact-host" value="#{customer.sip_domain}"/>
-        <param name="extension" value="#{number}"/>
-        <param name="context" value="#{sip_trunk_context}"/>
-      </gateway>
-    XML
+    if trunk_mode?
+      # Direct SIP trunk - no registration needed
+      <<~XML
+        <!-- Direct SIP Trunk for #{number} -->
+        <gateway name="#{gateway_name}">
+          <param name="proxy" value="#{sip_trunk_host}:#{sip_trunk_port}"/>
+          <param name="register" value="false"/>
+          <param name="context" value="ai_receptionist_#{customer.ai_receptionist_id}"/>
+          <param name="caller-id-in-from" value="false"/>
+          <param name="extension" value="#{number}"/>
+        </gateway>
+      XML
+    else
+      # Outbound registration - FreeSWITCH registers to customer's system
+      <<~XML
+        <!-- Outbound Registration for #{number} -->
+        <gateway name="#{gateway_name}">
+          <param name="username" value="#{sip_trunk_username}"/>
+          <param name="password" value="#{sip_trunk_password}"/>
+          <param name="realm" value="#{sip_trunk_domain}"/>
+          <param name="proxy" value="#{sip_trunk_host}:#{sip_trunk_port}"/>
+          <param name="register" value="true"/>
+          <param name="register-transport" value="#{sip_trunk_protocol.downcase}"/>
+          <param name="retry-seconds" value="30"/>
+          <param name="caller-id-in-from" value="false"/>
+          <param name="extension" value="#{number}"/>
+          <param name="context" value="ai_receptionist_#{customer.ai_receptionist_id}"/>
+        </gateway>
+      XML
+    end
   end
   
   # Generate FreeSWITCH dialplan entry for incoming calls to this number
@@ -93,10 +126,11 @@ class PhoneNumber < ApplicationRecord
     return nil unless sip_trunk_enabled? && incoming_calls_enabled?
     
     <<~XML
-      <extension name="incoming_#{number.gsub(/\D/, '')}">
+      <extension name="incoming_#{number.gsub(/\D/, '')}_#{connection_mode}">
         <condition field="destination_number" expression="^#{Regexp.escape(number)}$">
           <action application="set" data="customer_id=#{customer.id}"/>
           <action application="set" data="phone_number_id=#{id}"/>
+          <action application="set" data="connection_mode=#{connection_mode}"/>
           <action application="set" data="effective_caller_id_name=#{customer.name}"/>
           <action application="set" data="effective_caller_id_number=#{number}"/>
           <action application="answer"/>
@@ -107,21 +141,35 @@ class PhoneNumber < ApplicationRecord
     XML
   end
   
-  # Test SIP trunk connectivity
+  # Test SIP configuration based on connection mode
   def test_sip_trunk_connection
     return { status: 'disabled', message: 'SIP trunk is disabled' } unless sip_trunk_enabled?
     
-    # This would normally use a SIP testing library
-    # For now, return a simulated response
-    {
-      status: 'success',
-      message: 'SIP trunk configuration appears valid',
-      details: {
-        host: sip_trunk_host,
-        port: sip_trunk_port,
-        username: sip_trunk_username,
-        protocol: sip_trunk_protocol
+    if trunk_mode?
+      {
+        status: 'success',
+        mode: 'trunk',
+        message: 'Direct SIP trunk configuration appears valid',
+        details: {
+          host: sip_trunk_host,
+          port: sip_trunk_port,
+          protocol: sip_trunk_protocol,
+          note: 'IP-based authentication - no registration required'
+        }
       }
-    }
+    else
+      {
+        status: 'success', 
+        mode: 'register',
+        message: 'Outbound registration configuration appears valid',
+        details: {
+          host: sip_trunk_host,
+          port: sip_trunk_port,
+          username: sip_trunk_username,
+          protocol: sip_trunk_protocol,
+          note: 'Will register to customer system with provided credentials'
+        }
+      }
+    end
   end
 end

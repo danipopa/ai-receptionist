@@ -128,6 +128,18 @@ data:
           <param name="disable-100-continue" value="true"/>
           <param name="method" value="POST"/>
         </binding>
+        <binding name="dialplan">
+          <param name="gateway-url" value="http://backend-api:3000/api/v1/freeswitch/dialplan" bindings="dialplan"/>
+          <param name="gateway-credentials" value="user:pass"/>
+          <param name="disable-100-continue" value="true"/>
+          <param name="method" value="POST"/>
+        </binding>
+        <binding name="configuration">
+          <param name="gateway-url" value="http://backend-api:3000/api/v1/freeswitch/configuration" bindings="configuration"/>
+          <param name="gateway-credentials" value="user:pass"/>
+          <param name="disable-100-continue" value="true"/>
+          <param name="method" value="POST"/>
+        </binding>
       </bindings>
     </configuration>
     <load module="mod_g729"/>

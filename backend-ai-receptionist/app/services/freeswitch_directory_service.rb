@@ -1,27 +1,32 @@
 class FreeswitchDirectoryService
   class << self
-    # Generate FreeSWITCH directory XML for all customers
+    # Generate FreeSWITCH directory XML - simplified since customers don't register TO us
     def generate_directory_xml
-      customers = Customer.sip_enabled.includes(:phone_numbers)
-      
+      # No customer registration needed - just basic domain setup
       <<~XML
         <?xml version="1.0" encoding="UTF-8" standalone="no"?>
         <document type="freeswitch/xml">
           <section name="directory">
             <domain name="ai-receptionist.local">
               <params>
-                <param name="dial-string" value="{^^:sip_invite_domain=${dialed_domain}:presence_id=${dialed_user}@${dialed_domain}}${sofia_contact(*/${dialed_user}@${dialed_domain})}"/>
+                <param name="dial-string" value="{presence_id=${dialed_user}@${dialed_domain}}${sofia_contact(*/${dialed_user}@${dialed_domain})}"/>
               </params>
               <variables>
                 <variable name="record_stereo" value="true"/>
-                <variable name="default_gateway" value="$${default_provider}"/>
-                <variable name="default_areacode" value="$${default_areacode}"/>
-                <variable name="transfer_fallback_extension" value="operator"/>
+                <variable name="transfer_fallback_extension" value="ai_operator"/>
               </variables>
               <groups>
                 <group name="ai_receptionist">
                   <users>
-                    #{customers.map(&:to_freeswitch_directory_xml).join("\n")}
+                    <!-- AI Receptionist service users only -->
+                    <user id="ai_service">
+                      <params>
+                        <param name="password" value="ai_service_internal"/>
+                      </params>
+                      <variables>
+                        <variable name="user_context" value="ai_receptionist"/>
+                      </variables>
+                    </user>
                   </users>
                 </group>
               </groups>
@@ -31,7 +36,7 @@ class FreeswitchDirectoryService
       XML
     end
     
-    # Generate FreeSWITCH gateway configuration for all SIP trunks
+    # Generate FreeSWITCH gateway configuration for all SIP connections (both trunk and register modes)
     def generate_gateway_xml
       phone_numbers = PhoneNumber.sip_trunk_enabled.includes(:customer)
       
@@ -43,7 +48,7 @@ class FreeswitchDirectoryService
               <profiles>
                 <profile name="external">
                   <gateways>
-                    #{phone_numbers.map(&:to_freeswitch_gateway_xml).join("\n")}
+                    #{phone_numbers.map(&:to_freeswitch_gateway_xml).compact.join("\n")}
                   </gateways>
                 </profile>
               </profiles>

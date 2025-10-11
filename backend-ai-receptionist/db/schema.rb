@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_05_150027) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_06_150605) do
   create_table "call_transcripts", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "phone_number_id", null: false
     t.string "caller_id"
@@ -34,13 +34,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_05_150027) do
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "sip_username"
-    t.string "sip_password"
-    t.string "sip_domain", default: "ai-receptionist.local"
-    t.boolean "sip_enabled", default: true
-    t.integer "max_concurrent_calls", default: 5
-    t.index ["sip_username", "sip_domain"], name: "index_customers_on_sip_username_and_sip_domain", unique: true
-    t.index ["sip_username"], name: "index_customers_on_sip_username", unique: true
   end
 
   create_table "faqs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -65,7 +58,21 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_05_150027) do
     t.boolean "is_primary"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "sip_trunk_enabled", default: false, null: false
+    t.string "sip_trunk_host"
+    t.integer "sip_trunk_port", default: 5060
+    t.string "sip_trunk_username"
+    t.string "sip_trunk_password"
+    t.string "sip_trunk_domain"
+    t.string "sip_trunk_protocol", default: "UDP"
+    t.string "sip_trunk_context", default: "ai_receptionist"
+    t.boolean "incoming_calls_enabled", default: true, null: false
+    t.boolean "outbound_calls_enabled", default: false, null: false
+    t.string "connection_mode", default: "trunk"
+    t.index ["connection_mode"], name: "index_phone_numbers_on_connection_mode"
     t.index ["customer_id"], name: "index_phone_numbers_on_customer_id"
+    t.index ["sip_trunk_enabled"], name: "index_phone_numbers_on_sip_trunk_enabled"
+    t.index ["sip_trunk_username", "sip_trunk_domain"], name: "index_phone_numbers_on_sip_trunk_username_and_domain"
   end
 
   add_foreign_key "call_transcripts", "phone_numbers"

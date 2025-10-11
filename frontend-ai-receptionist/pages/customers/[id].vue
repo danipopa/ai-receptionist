@@ -54,33 +54,86 @@
             <div
               v-for="number in incomingNumbers"
               :key="number.id"
-              class="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
+              class="border border-gray-200 rounded-lg p-4"
             >
-              <div>
-                <p class="font-medium text-gray-900">{{ number.phone_number }}</p>
-                <p class="text-sm text-gray-600">{{ number.description || 'No description' }}</p>
-              </div>
-              <div class="flex items-center space-x-2">
-                <span
-                  :class="[
-                    'px-2 py-1 text-xs rounded-full',
-                    number.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  ]"
-                >
-                  {{ number.active ? 'Active' : 'Inactive' }}
-                </span>
-                <button
-                  @click="toggleNumberStatus(number)"
-                  class="text-blue-600 hover:text-blue-800 text-sm"
-                >
-                  {{ number.active ? 'Deactivate' : 'Activate' }}
-                </button>
-                <button
-                  @click="removeNumber(number.id)"
-                  class="text-red-600 hover:text-red-800 text-sm"
-                >
-                  Remove
-                </button>
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center space-x-3">
+                    <p class="font-medium text-gray-900">{{ number.number }}</p>
+                    <span
+                      v-if="number.is_primary"
+                      class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800"
+                    >
+                      Primary
+                    </span>
+                  </div>
+                  
+                  <p class="text-sm text-gray-600 mt-1">{{ number.description || 'No description' }}</p>
+                  
+                  <!-- SIP Trunk Status -->
+                  <div class="mt-2 flex items-center space-x-4">
+                    <span
+                      :class="[
+                        'px-2 py-1 text-xs rounded-full',
+                        number.sip_trunk_enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                      ]"
+                    >
+                      {{ number.sip_trunk_enabled ? 'SIP Enabled' : 'SIP Disabled' }}
+                    </span>
+                    
+                    <span
+                      v-if="number.sip_trunk_enabled"
+                      :class="[
+                        'px-2 py-1 text-xs rounded-full',
+                        number.connection_mode === 'trunk' ? 'bg-purple-100 text-purple-800' : 'bg-orange-100 text-orange-800'
+                      ]"
+                    >
+                      {{ number.connection_mode === 'trunk' ? 'Direct Trunk' : 'Registration' }}
+                    </span>
+                    
+                    <span
+                      v-if="number.sip_trunk_enabled && number.incoming_calls_enabled"
+                      class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800"
+                    >
+                      Incoming ✓
+                    </span>
+                    
+                    <span
+                      v-if="number.sip_trunk_enabled && number.outbound_calls_enabled"
+                      class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800"
+                    >
+                      Outbound ✓
+                    </span>
+                  </div>
+                  
+                  <!-- SIP Details -->
+                  <div v-if="number.sip_trunk_enabled" class="mt-2 text-xs text-gray-500">
+                    <span v-if="number.sip_trunk_host">{{ number.sip_trunk_host }}:{{ number.sip_trunk_port || 5060 }}</span>
+                    <span v-if="number.sip_trunk_protocol" class="ml-2">({{ number.sip_trunk_protocol }})</span>
+                  </div>
+                </div>
+                
+                <div class="flex items-center space-x-2">
+                  <button
+                    v-if="number.sip_trunk_enabled"
+                    @click="testSipTrunk(number)"
+                    class="text-green-600 hover:text-green-800 text-sm"
+                  >
+                    Test SIP
+                  </button>
+                  <button
+                    @click="editNumber(number)"
+                    class="text-blue-600 hover:text-blue-800 text-sm"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    @click="removeNumber(number.id)"
+                    class="text-red-600 hover:text-red-800 text-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -222,42 +275,175 @@
 
     <!-- Add Number Modal -->
     <div v-if="showAddNumberModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-medium text-gray-900">Add Phone Number</h3>
+          <h3 class="text-lg font-medium text-gray-900">Add Phone Number & SIP Configuration</h3>
         </div>
         
-        <form @submit.prevent="addNumber" class="p-6 space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Phone Number</label>
-            <input
-              v-model="newNumber.phone_number"
-              type="tel"
-              required
-              placeholder="+1234567890"
-              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2"
-            >
+        <form @submit.prevent="addNumber" class="p-6 space-y-6">
+          <!-- Basic Phone Number Info -->
+          <div class="space-y-4">
+            <h4 class="text-md font-medium text-gray-900">Phone Number Details</h4>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Phone Number</label>
+              <input
+                v-model="newNumber.number"
+                type="tel"
+                required
+                placeholder="+1234567890"
+                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2"
+              >
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Description (Optional)</label>
+              <input
+                v-model="newNumber.description"
+                type="text"
+                placeholder="Main line, support, etc."
+                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2"
+              >
+            </div>
           </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Description (Optional)</label>
-            <input
-              v-model="newNumber.description"
-              type="text"
-              placeholder="Main line, support, etc."
-              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2"
-            >
-          </div>
-          
-          <div class="flex items-center">
-            <input
-              v-model="newNumber.active"
-              type="checkbox"
-              class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            >
-            <label class="ml-2 block text-sm text-gray-900">
-              Activate immediately
-            </label>
+
+          <!-- SIP Configuration -->
+          <div class="space-y-4 border-t border-gray-200 pt-6">
+            <h4 class="text-md font-medium text-gray-900">SIP Trunk Configuration</h4>
+            
+            <div class="flex items-center">
+              <input
+                v-model="newNumber.sip_trunk_enabled"
+                type="checkbox"
+                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              >
+              <label class="ml-2 block text-sm text-gray-900">
+                Enable SIP trunk for this number
+              </label>
+            </div>
+
+            <div v-if="newNumber.sip_trunk_enabled" class="space-y-4 ml-6 pl-4 border-l-2 border-blue-200">
+              <!-- Connection Mode -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Connection Mode</label>
+                <select
+                  v-model="newNumber.connection_mode"
+                  class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2"
+                >
+                  <option value="trunk">Direct SIP Trunk (IP-based authentication)</option>
+                  <option value="register">Outbound Registration (Username/Password)</option>
+                </select>
+                <p class="mt-1 text-xs text-gray-500">
+                  <span v-if="newNumber.connection_mode === 'trunk'">
+                    Your SIP provider sends calls directly to our IP address. No registration needed.
+                  </span>
+                  <span v-else>
+                    Our system registers to your SIP server using provided credentials.
+                  </span>
+                </p>
+              </div>
+
+              <!-- SIP Host & Port -->
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">SIP Host</label>
+                  <input
+                    v-model="newNumber.sip_trunk_host"
+                    type="text"
+                    required
+                    placeholder="sip.provider.com"
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2"
+                  >
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Port</label>
+                  <input
+                    v-model.number="newNumber.sip_trunk_port"
+                    type="number"
+                    min="1"
+                    max="65535"
+                    placeholder="5060"
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2"
+                  >
+                </div>
+              </div>
+
+              <!-- Conditional fields based on connection mode -->
+              <div v-if="newNumber.connection_mode === 'register'" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">Username</label>
+                    <input
+                      v-model="newNumber.sip_trunk_username"
+                      type="text"
+                      required
+                      placeholder="Your SIP username"
+                      class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2"
+                    >
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">Password</label>
+                    <input
+                      v-model="newNumber.sip_trunk_password"
+                      type="password"
+                      required
+                      placeholder="Your SIP password"
+                      class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2"
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="newNumber.connection_mode === 'trunk' || newNumber.connection_mode === 'register'">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">Domain</label>
+                    <input
+                      v-model="newNumber.sip_trunk_domain"
+                      type="text"
+                      :required="newNumber.connection_mode === 'trunk'"
+                      placeholder="provider.com"
+                      class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2"
+                    >
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">Protocol</label>
+                    <select
+                      v-model="newNumber.sip_trunk_protocol"
+                      class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2"
+                    >
+                      <option value="UDP">UDP</option>
+                      <option value="TCP">TCP</option>
+                      <option value="TLS">TLS</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Call Direction Settings -->
+              <div class="space-y-2">
+                <div class="flex items-center">
+                  <input
+                    v-model="newNumber.incoming_calls_enabled"
+                    type="checkbox"
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  >
+                  <label class="ml-2 block text-sm text-gray-900">
+                    Enable incoming calls (AI will answer)
+                  </label>
+                </div>
+                <div class="flex items-center">
+                  <input
+                    v-model="newNumber.outbound_calls_enabled"
+                    type="checkbox"
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  >
+                  <label class="ml-2 block text-sm text-gray-900">
+                    Enable outbound calls (for AI to make calls)
+                  </label>
+                </div>
+              </div>
+            </div>
           </div>
           
           <div v-if="addNumberError" class="p-3 bg-red-50 border border-red-200 rounded-md">
@@ -302,9 +488,19 @@ const showAddNumberModal = ref(false)
 const addingNumber = ref(false)
 const addNumberError = ref(null)
 const newNumber = ref({
-  phone_number: '',
+  number: '',
   description: '',
-  active: true
+  is_primary: false,
+  sip_trunk_enabled: false,
+  connection_mode: 'trunk',
+  sip_trunk_host: '',
+  sip_trunk_port: 5060,
+  sip_trunk_username: '',
+  sip_trunk_password: '',
+  sip_trunk_domain: '',
+  sip_trunk_protocol: 'UDP',
+  incoming_calls_enabled: true,
+  outbound_calls_enabled: false
 })
 
 // Website settings
@@ -424,7 +620,7 @@ const addNumber = async () => {
         'Authorization': `Bearer ${config.public.apiKey}`
       },
       body: {
-        number: newNumber.value
+        phone_number: newNumber.value
       }
     })
     
@@ -436,34 +632,6 @@ const addNumber = async () => {
     addNumberError.value = err.data?.message || err.message || 'Failed to add phone number'
   } finally {
     addingNumber.value = false
-  }
-}
-
-// Toggle number status
-const toggleNumberStatus = async (number) => {
-  try {
-    const response = await $fetch(`${config.public.apiBase}/customers/${customerId.value}/numbers/${number.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${config.public.apiKey}`
-      },
-      body: {
-        number: {
-          ...number,
-          active: !number.active
-        }
-      }
-    })
-    
-    // Update local state
-    const index = incomingNumbers.value.findIndex(n => n.id === number.id)
-    if (index !== -1) {
-      incomingNumbers.value[index] = response.data
-    }
-    
-  } catch (err) {
-    console.error('Failed to update number status:', err)
   }
 }
 
@@ -551,14 +719,54 @@ const updateFaqSettings = async () => {
   }
 }
 
+// Test SIP trunk connection
+const testSipTrunk = async (number) => {
+  try {
+    const response = await $fetch(`${config.public.apiBase}/customers/${customerId.value}/phone_numbers/${number.id}/test_sip_trunk`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${config.public.apiKey}`
+      }
+    })
+    
+    // Show success/error message
+    if (response.status === 'success') {
+      alert(`SIP Test Successful!\nMode: ${response.mode}\n${response.message}`)
+    } else {
+      alert(`SIP Test Failed: ${response.message}`)
+    }
+    
+  } catch (err) {
+    console.error('Failed to test SIP trunk:', err)
+    alert('Failed to test SIP trunk connection')
+  }
+}
+
+// Edit phone number (placeholder for now)
+const editNumber = (number) => {
+  // For now, just show an alert. In a real implementation, you'd open an edit modal
+  alert(`Edit functionality for ${number.number} will be implemented soon`)
+}
+
 // Modal functions
 const closeAddNumberModal = () => {
   showAddNumberModal.value = false
   addNumberError.value = null
   newNumber.value = {
-    phone_number: '',
+    number: '',
     description: '',
-    active: true
+    is_primary: false,
+    sip_trunk_enabled: false,
+    connection_mode: 'trunk',
+    sip_trunk_host: '',
+    sip_trunk_port: 5060,
+    sip_trunk_username: '',
+    sip_trunk_password: '',
+    sip_trunk_domain: '',
+    sip_trunk_protocol: 'UDP',
+    incoming_calls_enabled: true,
+    outbound_calls_enabled: false
   }
 }
 
