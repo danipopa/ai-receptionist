@@ -81,6 +81,8 @@ spec:
           mountPath: /var/log/freeswitch
         - name: freeswitch-data
           mountPath: /var/lib/freeswitch
+        - name: freeswitch-config
+          mountPath: /etc/freeswitch
         livenessProbe:
           tcpSocket:
             port: 8021
@@ -108,6 +110,9 @@ spec:
       - name: freeswitch-data
         persistentVolumeClaim:
           claimName: freeswitch-data-pvc
+      - name: freeswitch-config
+        configMap:
+          name: freeswitch-config
       restartPolicy: Always
       terminationGracePeriodSeconds: 60
 ---
