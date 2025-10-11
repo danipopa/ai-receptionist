@@ -78,6 +78,12 @@ data:
         <param name="listen-port" value="8021"/>
         <param name="password" value="ClueCon"/>
         <param name="apply-inbound-acl" value="loopback.auto"/>
+        <acl>
+          <network list="loopback.auto">
+            <node type="allow" cidr="172.31.255.2/32"/>
+            <!-- You can also allow a subnet, e.g. 172.31.0.0/16 -->
+          </network>
+        </acl>
       </settings>
     </configuration>
   switch.conf.xml: |
