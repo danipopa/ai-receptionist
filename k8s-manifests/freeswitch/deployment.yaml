@@ -81,8 +81,24 @@ spec:
           mountPath: /var/log/freeswitch
         - name: freeswitch-data
           mountPath: /var/lib/freeswitch
-        - name: freeswitch-config
-          mountPath: /etc/freeswitch
+          - name: freeswitch-config
+            mountPath: /etc/freeswitch/modules.conf.xml
+            subPath: modules.conf.xml
+          - name: freeswitch-config
+            mountPath: /etc/freeswitch/xml_curl.conf.xml
+            subPath: xml_curl.conf.xml
+          - name: freeswitch-config
+            mountPath: /etc/freeswitch/ai_receptionist.xml
+            subPath: ai_receptionist.xml
+          - name: freeswitch-config
+            mountPath: /etc/freeswitch/event_socket.conf.xml
+            subPath: event_socket.conf.xml
+          - name: freeswitch-config
+            mountPath: /etc/freeswitch/sofia.conf.xml
+            subPath: sofia.conf.xml
+          - name: freeswitch-config
+            mountPath: /etc/freeswitch/switch.conf.xml
+            subPath: switch.conf.xml
         livenessProbe:
           tcpSocket:
             port: 8021
@@ -110,9 +126,9 @@ spec:
       - name: freeswitch-data
         persistentVolumeClaim:
           claimName: freeswitch-data-pvc
-      - name: freeswitch-config
-        configMap:
-          name: freeswitch-config
+        - name: freeswitch-config
+          configMap:
+            name: freeswitch-config
       restartPolicy: Always
       terminationGracePeriodSeconds: 60
 ---
