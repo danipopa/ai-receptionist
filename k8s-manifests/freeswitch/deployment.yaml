@@ -82,22 +82,22 @@ spec:
         - name: freeswitch-data
           mountPath: /var/lib/freeswitch
         - name: freeswitch-config
-          mountPath: /etc/freeswitch/modules.conf.xml
+          mountPath: /etc/freeswitch/autoload_configs/modules.conf.xml
           subPath: modules.conf.xml
         - name: freeswitch-config
-          mountPath: /etc/freeswitch/xml_curl.conf.xml
+          mountPath: /etc/freeswitch/autoload_configs/xml_curl.conf.xml
           subPath: xml_curl.conf.xml
         - name: freeswitch-config
-          mountPath: /etc/freeswitch/ai_receptionist.xml
+          mountPath: /etc/freeswitch/dialplan/ai_receptionist.xml
           subPath: ai_receptionist.xml
         - name: freeswitch-config
-          mountPath: /etc/freeswitch/event_socket.conf.xml
+          mountPath: /etc/freeswitch/autoload_configs/event_socket.conf.xml
           subPath: event_socket.conf.xml
         - name: freeswitch-config
-          mountPath: /etc/freeswitch/sofia.conf.xml
+          mountPath: /etc/freeswitch/autoload_configs/sofia.conf.xml
           subPath: sofia.conf.xml
         - name: freeswitch-config
-          mountPath: /etc/freeswitch/switch.conf.xml
+          mountPath: /etc/freeswitch/autoload_configs/switch.conf.xml
           subPath: switch.conf.xml
         livenessProbe:
           tcpSocket:
