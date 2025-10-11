@@ -94,7 +94,7 @@ spec:
       - name: db-migrate
         image: 176.9.65.80:5000/ai-receptionist/backend-ai-receptionist:latest
         imagePullPolicy: Always
-        command: ['bundle', 'exec', 'rails', 'db:migrate']
+        command: ['./bin/rails', 'db:migrate']
         env:
         - name: RAILS_ENV
           value: "production"
