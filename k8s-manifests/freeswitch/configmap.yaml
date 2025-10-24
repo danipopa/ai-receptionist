@@ -47,6 +47,7 @@ data:
           <node type="allow" cidr="24.18.42.127/32"/>
         </list>
         <list name="loopback.auto" default="deny">
+          <node type="allow" cidr="127.0.0.1/32"/>
           <node type="allow" cidr="172.31.255.2/32"/>
         </list>
       </network-lists>
