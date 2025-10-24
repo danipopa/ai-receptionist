@@ -93,6 +93,7 @@ data:
         <acl>
           <network list="loopback.auto">
             <node type="allow" cidr="172.31.255.2/32"/>
+            <node type="allow" cidr="127.0.0.1/32"/>
             <!-- You can also allow a subnet, e.g. 172.31.0.0/16 -->
           </network>
         </acl>
