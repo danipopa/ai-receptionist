@@ -1,0 +1,7 @@
+<configuration>
+  <lists>
+    <list name="trusted" default="deny">
+      <node type="allow" cidr="24.18.42.127/32"/>
+    </list>
+  </lists>
+</configuration>

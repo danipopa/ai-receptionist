@@ -97,6 +97,9 @@ spec:
           mountPath: /etc/freeswitch/autoload_configs/sofia.conf.xml
           subPath: sofia.conf.xml
         - name: freeswitch-config
+          mountPath: /etc/freeswitch/autoload_configs/acl.conf.xml
+          subPath: acl.conf.xml
+        - name: freeswitch-config
           mountPath: /etc/freeswitch/autoload_configs/switch.conf.xml
           subPath: switch.conf.xml
         livenessProbe:
