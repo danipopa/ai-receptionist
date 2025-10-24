@@ -14,7 +14,7 @@ echo "Fixing ownership..."
 chown -R freeswitch:freeswitch /var/lib/freeswitch
 chown -R freeswitch:freeswitch /var/log/freeswitch
 chown -R freeswitch:freeswitch /var/run/freeswitch
-chown -R freeswitch:freeswitch /etc/freeswitch
+# chown -R freeswitch:freeswitch /etc/freeswitch
 
 # Ensure the database directory is writable
 echo "Setting permissions..."

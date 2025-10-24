@@ -37,26 +37,71 @@ class FreeswitchDirectoryService
     end
     
     # Generate FreeSWITCH gateway configuration for all SIP connections (both trunk and register modes)
-    def generate_gateway_xml
+        def generate_gateway_xml
       phone_numbers = PhoneNumber.sip_trunk_enabled.includes(:customer)
       
       <<~XML
         <?xml version="1.0" encoding="UTF-8" standalone="no"?>
         <document type="freeswitch/xml">
           <section name="configuration">
-            <configuration name="sofia.conf">
-              <profiles>
-                <profile name="external">
-                  <gateways>
-                    #{phone_numbers.map(&:to_freeswitch_gateway_xml).compact.join("\n")}
-                  </gateways>
-                </profile>
-              </profiles>
-            </configuration>
+            <configuration name="sofia.conf" description="sofia Endpoint">
+                  <profiles>
+                    <profile name="ai_receptionist">
+                      <settings>
+                        <param name="debug" value="0"/>
+                        <param name="sip-trace" value="no"/>
+                        <param name="rfc2833-pt" value="101"/>
+                        <param name="sip-port" value="5060"/>
+                        <param name="dialplan" value="XML"/>
+                        <param name="context" value="ai_receptionist"/>
+                        <param name="dtmf-duration" value="2000"/>
+                        <param name="inbound-codec-prefs" value="PCMU,PCMA,GSM"/>
+                        <param name="outbound-codec-prefs" value="PCMU,PCMA,GSM"/>
+                        <param name="hold-music" value="$${hold_music}"/>
+                        <param name="rtp-timer-name" value="soft"/>
+                        <param name="local-network-acl" value="localnet.auto"/>
+                        <param name="manage-presence" value="false"/>
+                        <param name="inbound-codec-negotiation" value="generous"/>
+                        <param name="nonce-ttl" value="60"/>
+                        <param name="auth-calls" value="true"/>
+                        <param name="accept-blind-reg" value="false"/>
+                        <param name="accept-blind-auth" value="false"/>
+                        <param name="auth-all-packets" value="false"/>
+                        <param name="ext-rtp-ip" value="auto-nat"/>
+                        <param name="ext-sip-ip" value="auto-nat"/>
+                        <param name="rtp-ip" value="auto"/>
+                        <param name="sip-ip" value="auto"/>
+                        <!-- Directory lookup via HTTP -->
+                        <param name="xml-user-directory" value="true"/>
+                        <param name="xml-user-directory-cache" value="false"/>
+                      </settings>
+                    </profile>
+                  </profiles>
+                </configuration>
           </section>
         </document>
       XML
     end
+    # def generate_gateway_xml
+    #   phone_numbers = PhoneNumber.sip_trunk_enabled.includes(:customer)
+      
+    #   <<~XML
+    #     <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    #     <document type="freeswitch/xml">
+    #       <section name="configuration">
+    #         <configuration name="sofia.conf">
+    #           <profiles>
+    #             <profile name="external">
+    #               <gateways>
+    #                 #{phone_numbers.map(&:to_freeswitch_gateway_xml).compact.join("\n")}
+    #               </gateways>
+    #             </profile>
+    #           </profiles>
+    #         </configuration>
+    #       </section>
+    #     </document>
+    #   XML
+    # end
     
     # Generate FreeSWITCH dialplan for incoming call routing
     def generate_dialplan_xml
@@ -88,7 +133,7 @@ class FreeswitchDirectoryService
     def handle_directory_request(params)
       domain = params['domain']
       user = params['user']
-      
+      logger.info "FreeswitchDirectoryService: Handling directory request for user='#{user}' domain='#{domain}' params=#{params.inspect} "
       return generate_directory_xml unless user.present?
       
       # First try to find by customer SIP username
@@ -110,14 +155,13 @@ class FreeswitchDirectoryService
     # Handle incoming call routing requests
     def handle_dialplan_request(params)
       destination_number = params['Caller-Destination-Number']
-      
       return generate_dialplan_xml unless destination_number.present?
       
       # Find phone number by incoming number
       phone_number = PhoneNumber.find_by(number: destination_number, 
                                         sip_trunk_enabled: true,
                                         incoming_calls_enabled: true)
-      
+      Rails.logger.info "FreeswitchDirectoryService: Handling dialplan request for destination_number='#{destination_number}' params=#{params.inspect} phone_number=#{phone_number.inspect} "
       return phone_number_dialplan_xml(phone_number) if phone_number
       
       not_found_xml
@@ -126,12 +170,22 @@ class FreeswitchDirectoryService
     # Handle gateway configuration requests
     def handle_configuration_request(params)
       section = params['section']
-      
-      case section
+      key_value = params['key_value']
+      case key_value
       when 'sofia.conf'
         generate_gateway_xml
       else
-        not_found_xml
+        nil
+        # <<~XML
+        #   <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+        #   <document type="freeswitch/xml">
+        #     <section name="#{section}">
+        #       <configuration name="#{key_value}">
+        #         <!-- No dynamic config, return empty -->
+        #       </configuration>
+        #     </section>
+        #   </document>
+        # XML
       end
     end
     

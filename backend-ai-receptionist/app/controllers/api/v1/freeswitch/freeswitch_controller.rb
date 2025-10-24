@@ -1,4 +1,4 @@
-class Api::V1::FreeswitchController < ApplicationController
+class Api::V1::Freeswitch::FreeswitchController < ApplicationController
   skip_before_action :authenticate_api_key, only: [:directory, :dialplan, :configuration]
   
   # FreeSWITCH XML Directory Lookup
@@ -12,6 +12,7 @@ class Api::V1::FreeswitchController < ApplicationController
   # FreeSWITCH XML Dialplan Lookup
   # POST /api/v1/freeswitch/dialplan
   def dialplan
+    logger.info("FreeswitchController: Received dialplan request with params: #{params.inspect}")
     xml_response = FreeswitchDirectoryService.handle_dialplan_request(params)
     
     render xml: xml_response, content_type: 'application/xml'
@@ -21,6 +22,10 @@ class Api::V1::FreeswitchController < ApplicationController
   # POST /api/v1/freeswitch/configuration
   def configuration
     xml_response = FreeswitchDirectoryService.handle_configuration_request(params)
+
+    if xml_response.nil?
+      head :not_found and return
+    end
     
     render xml: xml_response, content_type: 'application/xml'
   end
@@ -75,4 +80,5 @@ class Api::V1::FreeswitchController < ApplicationController
   def sip_params
     params.require(:customer).permit(:sip_username, :sip_domain, :sip_enabled, :max_concurrent_calls)
   end
+  
 end

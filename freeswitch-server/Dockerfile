@@ -25,7 +25,8 @@ RUN echo "machine freeswitch.signalwire.com login signalwire password ${SIGNALWI
 RUN echo "deb [signed-by=/usr/share/keyrings/signalwire-freeswitch-repo.gpg] https://freeswitch.signalwire.com/repo/deb/debian-release/ bullseye main" \
     > /etc/apt/sources.list.d/freeswitch.list
 
-# Install FreeSWITCH and common modules
+
+# Install FreeSWITCH, all required modules, and sounds package in one step
 RUN apt-get update && apt-get install -y --no-install-recommends \
     freeswitch \
     freeswitch-conf-vanilla \
@@ -61,6 +62,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     freeswitch-mod-tone-stream \
     freeswitch-mod-lua \
     freeswitch-mod-say-en \
+    freeswitch-mod-xml-curl \
+    freeswitch-sounds-en-us-callie \
+    curl \
+    ngrep \
+    net-tools \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy custom configuration to override vanilla defaults
@@ -76,11 +82,13 @@ RUN chown -R freeswitch:freeswitch /etc/freeswitch /var/lib/freeswitch /var/log/
     mkdir -p /var/lib/freeswitch/db && \
     chown -R freeswitch:freeswitch /var/lib/freeswitch/db
 
+RUN rm -rf /etc/freeswitch/autoload_configs/sofia.conf.xml 
 # Run as root in container (safe and needed for proper access)
 # USER freeswitch
 
 # Set the working directory
 WORKDIR /var/lib/freeswitch
+
 
 # Expose necessary ports
 EXPOSE 5060/udp 5080/udp 8021/tcp 16384-32768/udp
@@ -88,3 +96,4 @@ EXPOSE 5060/udp 5080/udp 8021/tcp 16384-32768/udp
 # Set the command to run FreeSWITCH in the foreground
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD []
+
