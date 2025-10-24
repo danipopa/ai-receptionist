@@ -41,12 +41,15 @@ data:
       </profiles>
     </configuration>
   acl.conf.xml: |
-    <configuration>
-      <lists>
-        <list name="trusted" default="deny">
-          <node type="allow" cidr="24.18.42.127/32"/>
-        </list>
-      </lists>
+    <configuration name="acl.conf" description="Network Lists">
+      <network-lists>
+          <list name="localnet.auto" default="deny">
+            <node type="allow" cidr="24.18.42.127/32"/>
+          </list>
+          <list name="trusted" default="deny">
+            <node type="allow" cidr="24.18.42.127/32"/>
+          </list>
+      </network-lists>
     </configuration>
   ai_receptionist.xml: |
     <!-- dialplan/ai_receptionist.xml -->
