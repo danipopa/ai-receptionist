@@ -43,12 +43,12 @@ data:
   acl.conf.xml: |
     <configuration name="acl.conf" description="Network Lists">
       <network-lists>
-          <list name="localnet.auto" default="deny">
-            <node type="allow" cidr="24.18.42.127/32"/>
-          </list>
-          <list name="trusted" default="deny">
-            <node type="allow" cidr="24.18.42.127/32"/>
-          </list>
+        <list name="localnet.auto" default="deny">
+          <node type="allow" cidr="24.18.42.127/32"/>
+        </list>
+        <list name="loopback.auto" default="deny">
+          <node type="allow" cidr="172.31.255.2/32"/>
+        </list>
       </network-lists>
     </configuration>
   ai_receptionist.xml: |
