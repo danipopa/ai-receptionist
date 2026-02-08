@@ -28,5 +28,22 @@ spec:
             limits:
               cpu: 2
               memory: 2Gi
-          # Add config or volume mounts as needed
+          volumeMounts:
+            - mountPath: /dev/hugepages
+              name: hugepages
+            - mountPath: /etc/vpp/vpp.conf
+              name: vpp-config
+              subPath: vpp.conf
+          # Optionally mount /dev/vfio for PCI access
+          # devices:
+          #   - devicePath: /dev/vfio
+          #     name: vfio
+      volumes:
+        - name: hugepages
+          hostPath:
+            path: /dev/hugepages
+            type: DirectoryOrCreate
+        - name: vpp-config
+          configMap:
+            name: vpp-config
       restartPolicy: Always

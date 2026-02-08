@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vpp-config
+  namespace: ai-receptionist
+  labels:
+    app: vpp
+  component: vpp-config
+
+data:
+  vpp.conf: |
+    unix {
+      log /var/log/vpp/vpp.log
+      cli-listen /run/vpp/cli.sock
+    }
+    dpdk {
+      dev net1
+      # Optionally add eth0 if needed
+      # dev eth0
+    }
+    api-segment {
+      prefix vpp
+    }
