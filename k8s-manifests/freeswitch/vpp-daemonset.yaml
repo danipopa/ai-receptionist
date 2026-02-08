@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: vpp
+  namespace: ai-receptionist
+  labels:
+    app: vpp
+spec:
+  selector:
+    matchLabels:
+      app: vpp
+  template:
+    metadata:
+      labels:
+        app: vpp
+      annotations:
+        k8s.v1.cni.cncf.io/networks: freeswitch-macvlan
+    spec:
+      containers:
+        - name: vpp
+          image: fdio/vpp:latest
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 2
+              memory: 2Gi
+          # Add config or volume mounts as needed
+      restartPolicy: Always
