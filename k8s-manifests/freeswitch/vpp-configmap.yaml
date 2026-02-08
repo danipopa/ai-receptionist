@@ -9,7 +9,7 @@ metadata:
 data:
   vpp.conf: |
     unix {
-      log /var/log/vpp/vpp.log
+      log /dev/stdout
       cli-listen /run/vpp/cli.sock
     }
     dpdk {
