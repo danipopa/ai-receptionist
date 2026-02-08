@@ -6,6 +6,8 @@ metadata:
   labels:
     app: freeswitch-server
     component: telephony-core
+  annotations:
+    k8s.v1.cni.cncf.io/networks: freeswitch-macvlan
 spec:
   replicas: 1
   strategy:

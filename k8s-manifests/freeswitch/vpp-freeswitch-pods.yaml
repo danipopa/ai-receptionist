@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: vpp
+  annotations:
+    k8s.v1.cni.cncf.io/networks: freeswitch-macvlan
+spec:
+  containers:
+    - name: vpp
+      image: fdio/vpp:latest
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 500m
+          memory: 512Mi
+        limits:
+          cpu: 2
+          memory: 2Gi
+      # Add config or volume mounts as needed
