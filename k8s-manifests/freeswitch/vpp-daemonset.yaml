@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: vpp
-          image: fdio/vpp:latest
+          image: 176.9.65.80:5000/upf-vpp:latest
           securityContext:
             privileged: true
           resources:
